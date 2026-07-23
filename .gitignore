@@ -1,0 +1,5 @@
+# haikuporter build artifacts, if anyone builds in place
+work-*/
+download/
+packages/
+*.hpkg
