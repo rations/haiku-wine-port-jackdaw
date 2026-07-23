@@ -1,4 +1,4 @@
-# haiku-wine-port
+# haiku-wine-port-jackdaw
 
 A patched build of Wine for Haiku, packaged as a HaikuPorts port. It exists so that
 [vstbridge-haiku](https://github.com/rations/vstbridge-haiku) can run **Windows VST2 and VST3
