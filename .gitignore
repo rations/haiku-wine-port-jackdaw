@@ -3,3 +3,8 @@ work-*/
 download/
 packages/
 *.hpkg
+
+# Local-only agent instructions and tooling (not part of the port)
+CLAUDE.md
+RULES.md
+.claude/
