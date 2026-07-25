@@ -1,8 +1,12 @@
-From 7058dabb4d4be1dd0ed49042ae65997e7e3985f2 Mon Sep 17 00:00:00 2001
+From 94e2d800d519c58a1066cf0960db48e0cc63a4ea Mon Sep 17 00:00:00 2001
 From: X512 <danger_mail@list.ru>
 Date: Thu, 23 Apr 2026 02:37:32 +0200
-Subject: Add Wayland input header
+Subject: [PATCH 01/10] Add Wayland input header
 
+---
+ dlls/winewayland.drv/input-event-codes.h | 980 +++++++++++++++++++++++
+ 1 file changed, 980 insertions(+)
+ create mode 100644 dlls/winewayland.drv/input-event-codes.h
 
 diff --git a/dlls/winewayland.drv/input-event-codes.h b/dlls/winewayland.drv/input-event-codes.h
 new file mode 100644
@@ -991,14 +995,41 @@ index 0000000..a420672
 +
 +#endif
 -- 
-2.52.0
+2.47.3
 
 
-From c3d5ec4d635ec0ae10f63c2efe58e45af074b426 Mon Sep 17 00:00:00 2001
+From 662664a27a84fccd7f134dbd050a8dc2477b132b Mon Sep 17 00:00:00 2001
 From: X512 <danger_mail@list.ru>
 Date: Sun, 3 May 2026 11:49:20 +0200
-Subject: 11.8 patches
+Subject: [PATCH 02/10] 11.8 patches
 
+---
+ configure.ac                            |   2 +-
+ dlls/crypt32/unixlib.c                  |   4 +
+ dlls/nsiproxy.sys/ndis.c                |  13 +++
+ dlls/ntdll/unix/file.c                  |   7 ++
+ dlls/ntdll/unix/loader.c                |   8 ++
+ dlls/ntdll/unix/serial.c                |   2 +
+ dlls/ntdll/unix/server.c                |   3 +
+ dlls/ntdll/unix/signal_x86_64.c         | 123 ++++++++++++++++++++++++
+ dlls/ntdll/unix/socket.c                |  15 +++
+ dlls/ntdll/unix/system.c                |  16 +++
+ dlls/ntdll/unix/thread.c                |  15 +++
+ dlls/ntdll/unix/virtual.c               |  51 ++++++++++
+ dlls/winewayland.drv/wayland_keyboard.c |   4 +
+ dlls/winewayland.drv/wayland_pointer.c  |   4 +
+ dlls/winex11.drv/Makefile.in            |   2 +-
+ dlls/winex11.drv/bitblt.c               |   1 +
+ dlls/winex11.drv/keyboard.c             |   2 +
+ dlls/ws2_32/unixlib.c                   |   7 ++
+ include/wine/server.h                   |   4 +-
+ programs/winedbg/winedbg.c              |   3 +
+ server/change.c                         |   3 +
+ server/fd.c                             |   4 +
+ server/signal.c                         |   6 ++
+ server/sock.c                           |  14 +++
+ tools/winegcc/winegcc.c                 |   3 +
+ 25 files changed, 312 insertions(+), 4 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
 index 3e617aa..84f2a18 100644
@@ -1179,7 +1210,7 @@ index 24f2c20..74c44b8 100644
  #include "ntstatus.h"
  #include "windef.h"
 diff --git a/dlls/ntdll/unix/signal_x86_64.c b/dlls/ntdll/unix/signal_x86_64.c
-index 50539d5..92f4a22 100644
+index 50539d5..8d1bb33 100644
 --- a/dlls/ntdll/unix/signal_x86_64.c
 +++ b/dlls/ntdll/unix/signal_x86_64.c
 @@ -75,6 +75,20 @@
@@ -1903,17 +1934,20 @@ index 20ea512..da94e34 100644
  
      atexit( cleanup_output_files );
 -- 
-2.52.0
+2.47.3
 
 
-From 5522da3d38e2f6f4382f371a574f5a4c3fb67f9c Mon Sep 17 00:00:00 2001
+From 70244ce7f9412fc5ae84953d8475609182f5bf9f Mon Sep 17 00:00:00 2001
 From: Peppersawce <michaelpeppers89@yahoo.it>
 Date: Sun, 3 May 2026 13:04:22 +0200
-Subject: Define "get_current_thread_data"
+Subject: [PATCH 03/10] Define "get_current_thread_data"
 
+---
+ dlls/ntdll/unix/signal_x86_64.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/dlls/ntdll/unix/signal_x86_64.c b/dlls/ntdll/unix/signal_x86_64.c
-index 92f4a22..38d75da 100644
+index 8d1bb33..38d75da 100644
 --- a/dlls/ntdll/unix/signal_x86_64.c
 +++ b/dlls/ntdll/unix/signal_x86_64.c
 @@ -578,7 +578,7 @@ static unsigned int xstate_size = sizeof(XSAVE_AREA_HEADER);
@@ -1926,14 +1960,17 @@ index 92f4a22..38d75da 100644
  {
      unsigned long rsp;
 -- 
-2.52.0
+2.47.3
 
 
-From 0f4d2388e1c08d9770ac8cefea9bac9e3c3ea78d Mon Sep 17 00:00:00 2001
+From 9b8a11926925370144068ec63d9a7b8b6356b38d Mon Sep 17 00:00:00 2001
 From: Peppersawce <michaelpeppers89@yahoo.it>
 Date: Fri, 24 Apr 2026 15:59:56 +0200
-Subject: Disable Bluetooth on Beta 5
+Subject: [PATCH 04/10] Disable Bluetooth on Beta 5
 
+---
+ server/sock.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/server/sock.c b/server/sock.c
 index e098ec2..f1541d0 100644
@@ -1951,14 +1988,19 @@ index e098ec2..f1541d0 100644
  
  #include "ntstatus.h"
 -- 
-2.52.0
+2.47.3
 
 
-From 7a76bb147917179e3f0e511070234d19e8e01a44 Mon Sep 17 00:00:00 2001
+From 71a85132c0ac3159c1f391cd7c87c6c693bf604b Mon Sep 17 00:00:00 2001
 From: Ken Mays <kmays2000@gmail.com>
 Date: Sat, 25 Apr 2026 13:40:26 +0200
-Subject: Opensound support
+Subject: [PATCH 05/10] Opensound support
 
+---
+ configure.ac               | 6 +++---
+ dlls/wineoss.drv/oss.c     | 4 ++++
+ dlls/wineoss.drv/ossmidi.c | 4 ++++
+ 3 files changed, 11 insertions(+), 3 deletions(-)
 
 diff --git a/configure.ac b/configure.ac
 index 84f2a18..34f54d3 100644
@@ -2015,11 +2057,13 @@ index f584491..1aee258 100644
  
  #include "ntstatus.h"
 -- 
-2.52.0
-From 61c2534c0fbc415ed7e3cbc6513a9e960f402b3f Mon Sep 17 00:00:00 2001
-From: wine-haiku <ehqcar@proton.me>
+2.47.3
+
+
+From e0efb03d1226ed541006f777d5cdb9628df03284 Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
 Date: Sun, 19 Jul 2026 22:04:22 +1000
-Subject: Run static initializers in Winelib modules on Haiku
+Subject: [PATCH 06/10] Run static initializers in Winelib modules on Haiku
 
 Haikus libroot has neither dladdr1() nor dlinfo(), so __wine_init_so_dll()
 compiled to an empty function and no static constructor in any Winelib module
@@ -2033,6 +2077,9 @@ exists, so nothing else covered for this.
 Locate the current module with get_next_image_info() and walk its dynamic
 section from the program headers, which runtime_loader maps at the start of
 the text segment.
+---
+ libs/winecrt0/dll_soinit.c | 75 ++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 75 insertions(+)
 
 diff --git a/libs/winecrt0/dll_soinit.c b/libs/winecrt0/dll_soinit.c
 index 88d00d1..f4ab87b 100644
@@ -2130,10 +2177,10 @@ index 88d00d1..f4ab87b 100644
 2.47.3
 
 
-From ecbf4228ce28fb1e962046936272d2fc15a56430 Mon Sep 17 00:00:00 2001
-From: Yourself <user@shredder.lan>
+From c3132c5d65fb07e2ef911e46c78e0e88227568e0 Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
 Date: Mon, 20 Jul 2026 00:23:17 +1000
-Subject: Do not block in the SIGSEGV handler on Haiku
+Subject: [PATCH 07/10] Do not block in the SIGSEGV handler on Haiku
 
 The Haiku port left an interactive debug hook in segv_handler: after
 printing the fault it called fgetc(stdin) and waited for a keypress, with
@@ -2149,6 +2196,9 @@ faulting process never exited.
 
 Keep the diagnostics, drop the wait, and let execution continue into the
 normal exception dispatch as upstream does.
+---
+ dlls/ntdll/unix/signal_x86_64.c | 9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
 diff --git a/dlls/ntdll/unix/signal_x86_64.c b/dlls/ntdll/unix/signal_x86_64.c
 index 38d75da..932ee86 100644
@@ -2174,10 +2224,10 @@ index 38d75da..932ee86 100644
 2.47.3
 
 
-From 04632e090d85653ee21ba11d5adab1069a551182 Mon Sep 17 00:00:00 2001
-From: vstbridge-haiku <ehqcar@proton.me>
+From 6186ec29aed6064d0cea22b74c0d679c2bd9d833 Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
 Date: Mon, 20 Jul 2026 17:47:27 +1000
-Subject: loader: find the loader path via find_path() on Haiku
+Subject: [PATCH 08/10] loader: find the loader path via find_path() on Haiku
 
 Haiku has no /proc, so get_self_exe() returned NULL and the loader fell
 back to resolving argv[0]. That works for any invocation carrying a
@@ -2186,6 +2236,9 @@ the current directory and failed with "could not load ntdll.so".
 
 find_path() with B_FIND_PATH_IMAGE_PATH maps a pointer back to the image
 containing it, which for a pointer into the loader gives the loader path.
+---
+ loader/main.c | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
 diff --git a/loader/main.c b/loader/main.c
 index f8b113f..0a70c0c 100644
@@ -2216,6 +2269,742 @@ index f8b113f..0a70c0c 100644
  #endif
      return NULL;
  }
+-- 
+2.47.3
+
+
+From e1a386005c5d5074fee3dda494da0af4a24d8766 Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
+Date: Fri, 24 Jul 2026 16:53:02 +1000
+Subject: [PATCH 09/10] winewayland: add OSMesa software OpenGL backend for
+ Haiku
+
+Haiku's Mesa has no DRI swrast and no Wayland EGL platform, so the EGL path
+in opengl.c can never initialize a display there. Add opengl_osmesa.c, an
+OSMesa-backed opengl_driver_funcs (offscreen software GL, llvmpipe) that
+presents to the Wayland client subsurface via wl_shm. It installs no
+p_init_egl_platform, so win32u runs no EGL init. Selected via HAVE_OSMESA;
+opengl.c is compiled out there so exactly one TU defines WAYLAND_OpenGLInit.
+
+Report the WGL pixel type as WGL_TYPE_RGBA_ARB rather than PFD_TYPE_RGBA in
+osmesa_describe_pixel_format(). The two enums are unrelated and PFD_TYPE_RGBA
+is 0; opengl32's wglGetPixelFormatAttrib*ARB reads a zero pixel_type on the
+first format as "this driver supplies no ARB attribute information" and falls
+back to a (void *)1 "never called" driver entry point, which the first ARB
+query then calls -> null call. With the real WGL enum, opengl32 answers the
+ARB queries locally from these fields.
+---
+ configure.ac                         |   9 +
+ dlls/winewayland.drv/Makefile.in     |   1 +
+ dlls/winewayland.drv/opengl.c        |   9 +-
+ dlls/winewayland.drv/opengl_osmesa.c | 583 +++++++++++++++++++++++++++
+ 4 files changed, 601 insertions(+), 1 deletion(-)
+ create mode 100644 dlls/winewayland.drv/opengl_osmesa.c
+
+diff --git a/configure.ac b/configure.ac
+index 34f54d3..1cc8850 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -1271,6 +1271,15 @@ fi
+ WINE_NOTICE_WITH(opengl, [test -z "$ac_cv_lib_soname_EGL"],
+     [EGL ${notice_platform}development files not found])
+ 
++dnl **** Check for OSMesa (software offscreen OpenGL, used by winewayland.drv on Haiku) ****
++
++if test "x$with_opengl" != "xno"
++then
++    AC_CHECK_HEADER([GL/osmesa.h],
++        [WINE_CHECK_SONAME(OSMesa,OSMesaGetProcAddress,
++            [AC_DEFINE(HAVE_OSMESA, 1, [Define if we have the OSMesa software OpenGL library])])])
++fi
++
+ dnl **** Check for X11 ****
+ 
+ AC_PATH_X
+diff --git a/dlls/winewayland.drv/Makefile.in b/dlls/winewayland.drv/Makefile.in
+index 1f1b2cc..c1fe4b6 100644
+--- a/dlls/winewayland.drv/Makefile.in
++++ b/dlls/winewayland.drv/Makefile.in
+@@ -11,6 +11,7 @@ SOURCES = \
+ 	display.c \
+ 	dllmain.c \
+ 	opengl.c \
++	opengl_osmesa.c \
+ 	pointer-constraints-unstable-v1.xml \
+ 	relative-pointer-unstable-v1.xml \
+ 	text-input-unstable-v3.xml \
+diff --git a/dlls/winewayland.drv/opengl.c b/dlls/winewayland.drv/opengl.c
+index 66457e1..680551c 100644
+--- a/dlls/winewayland.drv/opengl.c
++++ b/dlls/winewayland.drv/opengl.c
+@@ -33,6 +33,11 @@
+ #include "waylanddrv.h"
+ #include "wine/debug.h"
+ 
++/* On Haiku the EGL path can never initialize (no Wayland EGL platform, no DRI
++ * swrast), so opengl_osmesa.c provides WAYLAND_OpenGLInit there instead and
++ * this translation unit is compiled out. */
++#ifndef HAVE_OSMESA
++
+ #ifdef HAVE_LIBWAYLAND_EGL
+ 
+ WINE_DEFAULT_DEBUG_CHANNEL(waylanddrv);
+@@ -275,4 +280,6 @@ UINT WAYLAND_OpenGLInit(UINT version, const struct opengl_funcs *opengl_funcs, c
+     return STATUS_NOT_IMPLEMENTED;
+ }
+ 
+-#endif
++#endif /* HAVE_LIBWAYLAND_EGL */
++
++#endif /* !HAVE_OSMESA */
+diff --git a/dlls/winewayland.drv/opengl_osmesa.c b/dlls/winewayland.drv/opengl_osmesa.c
+new file mode 100644
+index 0000000..2a5098c
+--- /dev/null
++++ b/dlls/winewayland.drv/opengl_osmesa.c
+@@ -0,0 +1,583 @@
++/*
++ * Wayland OpenGL functions, OSMesa (software) backend for Haiku
++ *
++ * Copyright 2020 Alexandros Frantzis for Collabora Ltd. (EGL backend, opengl.c)
++ * Copyright 2026 rations (OSMesa backend)
++ *
++ * This library is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU Lesser General Public
++ * License as published by the Free Software Foundation; either
++ * version 2.1 of the License, or (at your option) any later version.
++ *
++ * This library is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this library; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
++ */
++
++/* Why this exists: Haiku's Mesa builds no DRI swrast module and has no Wayland
++ * EGL platform, so the EGL path in opengl.c can never initialize a display on
++ * Haiku (eglInitialize fails). Haiku does ship OSMesa (offscreen software GL,
++ * llvmpipe), which gives a windowless desktop-GL 4.5 context. This backend
++ * renders GL with OSMesa into a CPU buffer and presents it to the window's
++ * Wayland client subsurface via wl_shm, reusing the driver's existing shm
++ * primitives. It plugs into win32u purely through the opengl_driver_funcs
++ * table (no p_init_egl_platform, so no EGL platform init runs) — see
++ * win32u/opengl.c display_funcs_init(). */
++
++#if 0
++#pragma makedep unix
++#endif
++
++#include "config.h"
++
++#include <assert.h>
++#include <dlfcn.h>
++#include <stdlib.h>
++#include <string.h>
++
++#include "ntstatus.h"
++#include "waylanddrv.h"
++#include "wine/debug.h"
++
++#ifdef HAVE_OSMESA
++
++WINE_DEFAULT_DEBUG_CHANNEL(waylanddrv);
++
++#include "wine/opengl_driver.h"
++
++/* OSMesa constants and the opaque context type, declared locally. Including
++ * <GL/osmesa.h> would pull in the system <GL/gl.h>, which conflicts with
++ * wine/wgl.h (both define the GL enums/types). We dlopen libOSMesa and only
++ * need these few values; GL types (GLenum, GLsizei, GLboolean, GLint,
++ * GL_UNSIGNED_BYTE, GL_TRUE) come from wine/wgl.h via opengl_driver.h. */
++typedef struct osmesa_context *OSMesaContext;
++#define OSMESA_BGRA                   0x1
++#define OSMESA_Y_UP                   0x11
++#define OSMESA_FORMAT                 0x22
++#define OSMESA_DEPTH_BITS             0x30
++#define OSMESA_STENCIL_BITS           0x31
++#define OSMESA_ACCUM_BITS             0x32
++#define OSMESA_PROFILE                0x33
++#define OSMESA_CORE_PROFILE           0x34
++#define OSMESA_COMPAT_PROFILE         0x35
++#define OSMESA_CONTEXT_MAJOR_VERSION  0x36
++#define OSMESA_CONTEXT_MINOR_VERSION  0x37
++
++/* wl_shm little-endian XRGB8888 byte order is B,G,R,X, matching OSMESA_BGRA
++ * (bytes B,G,R,A); the alpha byte is treated as opaque padding. */
++#define OSMESA_SHM_FORMAT WL_SHM_FORMAT_XRGB8888
++
++static const struct opengl_funcs *funcs;
++static const struct opengl_drawable_funcs osmesa_drawable_funcs;
++
++/* Resolved from libOSMesa once. GL entry points come from OSMesaGetProcAddress. */
++static void *osmesa_handle;
++static OSMesaContext (*p_OSMesaCreateContextAttribs)(const int *, OSMesaContext);
++static OSMesaContext (*p_OSMesaCreateContextExt)(GLenum, GLint, GLint, GLint, OSMesaContext);
++static void (*p_OSMesaDestroyContext)(OSMesaContext);
++static GLboolean (*p_OSMesaMakeCurrent)(OSMesaContext, void *, GLenum, GLsizei, GLsizei);
++static void (*p_OSMesaPixelStore)(GLint, GLint);
++static void *(*p_OSMesaGetProcAddress)(const char *);
++
++/* A tiny shm buffer rotation for presentation, mirroring the queue in
++ * window_surface.c (those helpers are static there, so we keep our own). */
++struct osmesa_buffer_queue
++{
++    struct wl_event_queue *wl_event_queue;
++    struct wl_list buffer_list;
++    int width, height;
++};
++
++struct osmesa_drawable
++{
++    struct opengl_drawable base;
++    struct wayland_client_surface *client;   /* NULL for pbuffers */
++    struct osmesa_buffer_queue *queue;       /* NULL for pbuffers */
++    int width, height;
++    void *buffer;                            /* width*height*4 BGRA render target */
++    size_t buffer_size;
++};
++
++static struct osmesa_drawable *impl_from_opengl_drawable(struct opengl_drawable *base)
++{
++    return CONTAINING_RECORD(base, struct osmesa_drawable, base);
++}
++
++/**********************************************************************
++ *          shm buffer queue (present targets)
++ */
++static void osmesa_buffer_release(void *data, struct wl_buffer *buffer)
++{
++    struct wayland_shm_buffer *shm_buffer = data;
++    shm_buffer->busy = FALSE;
++    wayland_shm_buffer_unref(shm_buffer);
++}
++
++static const struct wl_buffer_listener osmesa_buffer_listener = { osmesa_buffer_release };
++
++static void osmesa_buffer_queue_destroy(struct osmesa_buffer_queue *queue)
++{
++    struct wayland_shm_buffer *shm_buffer, *next;
++
++    wl_list_for_each_safe(shm_buffer, next, &queue->buffer_list, link)
++    {
++        wl_list_remove(&shm_buffer->link);
++        wl_list_init(&shm_buffer->link);
++        /* May still be busy: move release events to the per-process queue. */
++        wl_proxy_set_queue((struct wl_proxy *)shm_buffer->wl_buffer,
++                           process_wayland.wl_event_queue);
++        wayland_shm_buffer_unref(shm_buffer);
++    }
++
++    if (queue->wl_event_queue)
++    {
++        wl_display_dispatch_queue_pending(process_wayland.wl_display, queue->wl_event_queue);
++        wl_event_queue_destroy(queue->wl_event_queue);
++    }
++    free(queue);
++}
++
++static struct osmesa_buffer_queue *osmesa_buffer_queue_create(int width, int height)
++{
++    struct osmesa_buffer_queue *queue;
++
++    if (!(queue = calloc(1, sizeof(*queue)))) return NULL;
++    queue->wl_event_queue = wl_display_create_queue(process_wayland.wl_display);
++    if (!queue->wl_event_queue) { free(queue); return NULL; }
++    queue->width = width;
++    queue->height = height;
++    wl_list_init(&queue->buffer_list);
++    return queue;
++}
++
++static struct wayland_shm_buffer *osmesa_buffer_queue_get_free(struct osmesa_buffer_queue *queue)
++{
++    struct wayland_shm_buffer *shm_buffer;
++
++    while (TRUE)
++    {
++        int nbuffers = 0;
++
++        wl_display_dispatch_queue_pending(process_wayland.wl_display, queue->wl_event_queue);
++
++        wl_list_for_each(shm_buffer, &queue->buffer_list, link)
++        {
++            if (!shm_buffer->busy) return shm_buffer;
++            nbuffers++;
++        }
++
++        if (nbuffers < 3)
++        {
++            shm_buffer = wayland_shm_buffer_create(queue->width, queue->height, OSMESA_SHM_FORMAT);
++            if (shm_buffer)
++            {
++                wl_proxy_set_queue((struct wl_proxy *)shm_buffer->wl_buffer, queue->wl_event_queue);
++                wl_buffer_add_listener(shm_buffer->wl_buffer, &osmesa_buffer_listener, shm_buffer);
++                wl_list_insert(&queue->buffer_list, &shm_buffer->link);
++                return shm_buffer;
++            }
++            if (nbuffers < 2) { ERR("failed to acquire shm buffer\n"); return NULL; }
++        }
++
++        if (wl_display_dispatch_queue(process_wayland.wl_display, queue->wl_event_queue) == -1)
++            return NULL;
++    }
++}
++
++/**********************************************************************
++ *          drawable
++ */
++static BOOL osmesa_drawable_alloc_buffer(struct osmesa_drawable *gl, int width, int height)
++{
++    size_t size;
++
++    if (width <= 0) width = 1;
++    if (height <= 0) height = 1;
++    size = (size_t)width * height * 4;
++
++    if (size != gl->buffer_size)
++    {
++        void *p = realloc(gl->buffer, size);
++        if (!p) return FALSE;
++        gl->buffer = p;
++        gl->buffer_size = size;
++    }
++    gl->width = width;
++    gl->height = height;
++    return TRUE;
++}
++
++static void osmesa_drawable_sync_size(struct osmesa_drawable *gl)
++{
++    RECT rect = {0};
++    int width, height;
++
++    NtUserGetClientRect(gl->base.client->hwnd, &rect, NtUserGetDpiForWindow(gl->base.client->hwnd));
++    width = rect.right - rect.left;
++    height = rect.bottom - rect.top;
++    if (width <= 0) width = 1;
++    if (height <= 0) height = 1;
++
++    if (width == gl->width && height == gl->height) return;
++
++    osmesa_drawable_alloc_buffer(gl, width, height);
++    /* Drop the shm queue so the next present recreates buffers at the new size. */
++    if (gl->queue)
++    {
++        osmesa_buffer_queue_destroy(gl->queue);
++        gl->queue = NULL;
++    }
++}
++
++static void osmesa_drawable_destroy(struct opengl_drawable *base)
++{
++    struct osmesa_drawable *gl = impl_from_opengl_drawable(base);
++
++    if (gl->queue) osmesa_buffer_queue_destroy(gl->queue);
++    free(gl->buffer);
++}
++
++static void osmesa_drawable_flush(struct opengl_drawable *base, UINT flags)
++{
++    struct osmesa_drawable *gl = impl_from_opengl_drawable(base);
++
++    TRACE("drawable %s, flags %#x\n", debugstr_opengl_drawable(base), flags);
++
++    if ((flags & GL_FLUSH_UPDATED) && gl->client) osmesa_drawable_sync_size(gl);
++}
++
++static BOOL osmesa_drawable_swap(struct opengl_drawable *base)
++{
++    struct osmesa_drawable *gl = impl_from_opengl_drawable(base);
++    struct wayland_shm_buffer *shm_buffer;
++    struct wayland_client_surface *client = gl->client;
++
++    if (!client) return TRUE; /* pbuffer: nothing to present */
++
++    /* Make sure llvmpipe has finished writing gl->buffer before we copy it. */
++    if (funcs->p_glFinish) funcs->p_glFinish();
++
++    client_surface_present(&client->client);
++
++    if (!gl->queue && !(gl->queue = osmesa_buffer_queue_create(gl->width, gl->height)))
++        return FALSE;
++
++    if (!(shm_buffer = osmesa_buffer_queue_get_free(gl->queue))) return FALSE;
++
++    /* Copy the rendered frame into the shm buffer. Both are BGRA/XRGB with a
++     * width*4 stride and top-left origin (OSMESA_Y_UP set to 0 at make_current). */
++    memcpy(shm_buffer->map_data, gl->buffer, gl->buffer_size);
++
++    shm_buffer->busy = TRUE;
++    wayland_shm_buffer_ref(shm_buffer);
++
++    wl_surface_attach(client->wl_surface, shm_buffer->wl_buffer, 0, 0);
++    wl_surface_damage_buffer(client->wl_surface, 0, 0, gl->width, gl->height);
++    wp_viewport_set_source(client->wp_viewport, 0, 0,
++                           wl_fixed_from_int(gl->width), wl_fixed_from_int(gl->height));
++    wl_surface_commit(client->wl_surface);
++
++    return TRUE;
++}
++
++static const struct opengl_drawable_funcs osmesa_drawable_funcs =
++{
++    .destroy = osmesa_drawable_destroy,
++    .flush = osmesa_drawable_flush,
++    .swap = osmesa_drawable_swap,
++};
++
++/**********************************************************************
++ *          driver funcs
++ */
++static void *osmesa_get_proc_address(const char *name)
++{
++    void *proc = p_OSMesaGetProcAddress(name);
++    if (!proc && osmesa_handle) proc = dlsym(osmesa_handle, name);
++    return proc;
++}
++
++/* Software RGBA formats; window + pbuffer + double-buffer capable. */
++static const struct
++{
++    BYTE color_bits;
++    BYTE red_bits, red_shift;
++    BYTE green_bits, green_shift;
++    BYTE blue_bits, blue_shift;
++    BYTE alpha_bits, alpha_shift;
++    BYTE depth_bits;
++    BYTE stencil_bits;
++} osmesa_pixel_formats[] =
++{
++    { 32, 8, 16, 8, 8, 8, 0, 8, 24, 24, 8 },
++    { 32, 8, 16, 8, 8, 8, 0, 8, 24, 16, 8 },
++    { 32, 8, 16, 8, 8, 8, 0, 0,  0, 24, 8 },
++};
++
++static UINT osmesa_init_pixel_formats(UINT *onscreen_count)
++{
++    *onscreen_count = ARRAY_SIZE(osmesa_pixel_formats);
++    return ARRAY_SIZE(osmesa_pixel_formats);
++}
++
++static BOOL osmesa_describe_pixel_format(int format, struct wgl_pixel_format *descr)
++{
++    if (format <= 0 || format > ARRAY_SIZE(osmesa_pixel_formats)) return FALSE;
++
++    memset(descr, 0, sizeof(*descr));
++    descr->pfd.nSize        = sizeof(descr->pfd);
++    descr->pfd.nVersion     = 1;
++    descr->pfd.dwFlags      = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER |
++                              PFD_GENERIC_FORMAT;
++    descr->pfd.iPixelType   = PFD_TYPE_RGBA;
++    descr->pfd.cColorBits   = osmesa_pixel_formats[format - 1].color_bits;
++    descr->pfd.cRedBits     = osmesa_pixel_formats[format - 1].red_bits;
++    descr->pfd.cRedShift    = osmesa_pixel_formats[format - 1].red_shift;
++    descr->pfd.cGreenBits   = osmesa_pixel_formats[format - 1].green_bits;
++    descr->pfd.cGreenShift  = osmesa_pixel_formats[format - 1].green_shift;
++    descr->pfd.cBlueBits    = osmesa_pixel_formats[format - 1].blue_bits;
++    descr->pfd.cBlueShift   = osmesa_pixel_formats[format - 1].blue_shift;
++    descr->pfd.cAlphaBits   = osmesa_pixel_formats[format - 1].alpha_bits;
++    descr->pfd.cAlphaShift  = osmesa_pixel_formats[format - 1].alpha_shift;
++    descr->pfd.cDepthBits   = osmesa_pixel_formats[format - 1].depth_bits;
++    descr->pfd.cStencilBits = osmesa_pixel_formats[format - 1].stencil_bits;
++    descr->pfd.cAuxBuffers  = 0;
++    descr->pfd.iLayerType   = PFD_MAIN_PLANE;
++
++    /* This is the WGL pixel-type enum, NOT the PFD one: PFD_TYPE_RGBA is 0, and
++     * opengl32's wglGetPixelFormatAttrib*ARB treats a zero pixel_type on the
++     * first format as "driver supplies no ARB attrib info" and falls back to a
++     * (void *)1 "never called" driver entry point -> null call. Use the real
++     * WGL enum so opengl32 answers the ARB queries locally from these fields. */
++    descr->pixel_type          = WGL_TYPE_RGBA_ARB;
++    descr->draw_to_pbuffer     = 1;
++    descr->max_pbuffer_width   = 4096;
++    descr->max_pbuffer_height  = 4096;
++    descr->max_pbuffer_pixels  = 4096 * 4096;
++
++    return TRUE;
++}
++
++static void osmesa_init_extensions(struct opengl_funcs *funcs, BOOLEAN extensions[GL_EXTENSION_COUNT])
++{
++    /* Core GL functionality is exposed through win32u's own GL queries; we add
++     * no driver-specific WGL extensions here. */
++}
++
++static BOOL osmesa_context_create(int format, void *share, const int *attribs, void **context)
++{
++    int os_attribs[24], *end = os_attribs;
++    int major = 0, minor = 0, profile = OSMESA_COMPAT_PROFILE;
++    OSMesaContext ctx;
++
++    TRACE("format %d, share %p, attribs %p\n", format, share, attribs);
++
++    for (; attribs && attribs[0]; attribs += 2)
++    {
++        switch (attribs[0])
++        {
++        case WGL_CONTEXT_MAJOR_VERSION_ARB: major = attribs[1]; break;
++        case WGL_CONTEXT_MINOR_VERSION_ARB: minor = attribs[1]; break;
++        case WGL_CONTEXT_PROFILE_MASK_ARB:
++            if (attribs[1] & WGL_CONTEXT_ES2_PROFILE_BIT_EXT)
++            {
++                ERR("OpenGL ES contexts are not supported by the OSMesa backend\n");
++                return FALSE;
++            }
++            profile = (attribs[1] & WGL_CONTEXT_CORE_PROFILE_BIT_ARB) ?
++                      OSMESA_CORE_PROFILE : OSMESA_COMPAT_PROFILE;
++            break;
++        case WGL_CONTEXT_FLAGS_ARB:
++            /* debug / forward-compatible flags: no OSMesa equivalent, ignore */
++            break;
++        default:
++            FIXME("Unhandled context attribute %#x %#x\n", attribs[0], attribs[1]);
++            break;
++        }
++    }
++
++    *end++ = OSMESA_FORMAT;        *end++ = OSMESA_BGRA;
++    *end++ = OSMESA_DEPTH_BITS;    *end++ = 24;
++    *end++ = OSMESA_STENCIL_BITS;  *end++ = 8;
++    *end++ = OSMESA_ACCUM_BITS;    *end++ = 0;
++    *end++ = OSMESA_PROFILE;       *end++ = profile;
++    if (major)
++    {
++        *end++ = OSMESA_CONTEXT_MAJOR_VERSION; *end++ = major;
++        *end++ = OSMESA_CONTEXT_MINOR_VERSION; *end++ = minor;
++    }
++    *end = 0;
++
++    ctx = p_OSMesaCreateContextAttribs(os_attribs, share);
++    if (!ctx)
++    {
++        /* Fall back to a default-version context if the exact version failed. */
++        ctx = p_OSMesaCreateContextExt(OSMESA_BGRA, 24, 8, 0, share);
++    }
++    if (!ctx) { ERR("OSMesaCreateContext failed\n"); return FALSE; }
++
++    *context = ctx;
++    TRACE("created OSMesa context %p (gl %d.%d profile %d)\n", ctx, major, minor, profile);
++    return TRUE;
++}
++
++static BOOL osmesa_context_destroy(void *context)
++{
++    p_OSMesaDestroyContext(context);
++    return TRUE;
++}
++
++static BOOL osmesa_make_current(struct opengl_drawable *draw, struct opengl_drawable *read, void *context)
++{
++    struct osmesa_drawable *gl;
++
++    TRACE("draw %s, read %s, context %p\n", debugstr_opengl_drawable(draw),
++          debugstr_opengl_drawable(read), context);
++
++    if (!context) return TRUE; /* OSMesa has no explicit unbind; next bind replaces it */
++    if (!draw) return FALSE;
++
++    gl = impl_from_opengl_drawable(draw);
++    if (gl->client) osmesa_drawable_sync_size(gl);
++    if (!gl->buffer && !osmesa_drawable_alloc_buffer(gl, gl->width, gl->height)) return FALSE;
++
++    if (!p_OSMesaMakeCurrent(context, gl->buffer, GL_UNSIGNED_BYTE, gl->width, gl->height))
++    {
++        ERR("OSMesaMakeCurrent failed\n");
++        return FALSE;
++    }
++    /* wl_shm is top-origin; make OSMesa render top-down so no vertical flip. */
++    p_OSMesaPixelStore(OSMESA_Y_UP, 0);
++    return TRUE;
++}
++
++static BOOL osmesa_surface_create(HWND hwnd, int format, struct opengl_drawable **drawable)
++{
++    struct wayland_client_surface *client;
++    struct osmesa_drawable *gl;
++    struct opengl_drawable *previous;
++    RECT rect = {0};
++
++    TRACE("hwnd %p, format %d\n", hwnd, format);
++
++    if ((previous = *drawable) && previous->format == format) return TRUE;
++
++    NtUserGetClientRect(hwnd, &rect, NtUserGetDpiForWindow(hwnd));
++
++    if (!(client = wayland_client_surface_create(hwnd))) return FALSE;
++
++    gl = opengl_drawable_create(sizeof(*gl), &osmesa_drawable_funcs, format, &client->client);
++    if (!gl) { client_surface_release(&client->client); return FALSE; }
++    gl->client = client;
++
++    if (!osmesa_drawable_alloc_buffer(gl, rect.right - rect.left, rect.bottom - rect.top))
++    {
++        opengl_drawable_release(&gl->base);
++        return FALSE;
++    }
++
++    set_client_surface(hwnd, client);
++
++    if (previous) opengl_drawable_release(previous);
++    *drawable = &gl->base;
++    return TRUE;
++}
++
++static BOOL osmesa_pbuffer_create(HDC hdc, int format, BOOL largest, GLenum texture_format,
++                                  GLenum texture_target, GLint max_level, GLsizei *width,
++                                  GLsizei *height, struct opengl_drawable **drawable)
++{
++    struct osmesa_drawable *gl;
++
++    TRACE("hdc %p, format %d, %dx%d\n", hdc, format, *width, *height);
++
++    if (!(gl = opengl_drawable_create(sizeof(*gl), &osmesa_drawable_funcs, format, NULL)))
++        return FALSE;
++    if (!osmesa_drawable_alloc_buffer(gl, *width, *height))
++    {
++        opengl_drawable_release(&gl->base);
++        return FALSE;
++    }
++    *drawable = &gl->base;
++    return TRUE;
++}
++
++static BOOL osmesa_pbuffer_updated(HDC hdc, struct opengl_drawable *base, GLenum cube_face,
++                                   GLint mipmap_level)
++{
++    return GL_TRUE;
++}
++
++static UINT osmesa_pbuffer_bind(HDC hdc, struct opengl_drawable *base, GLenum buffer)
++{
++    return -1; /* use the default (win32u FBO) implementation */
++}
++
++static struct opengl_driver_funcs osmesa_driver_funcs =
++{
++    /* no p_init_egl_platform: keeps win32u from running any EGL platform init */
++    .p_get_proc_address     = osmesa_get_proc_address,
++    .p_init_pixel_formats   = osmesa_init_pixel_formats,
++    .p_describe_pixel_format = osmesa_describe_pixel_format,
++    .p_init_extensions      = osmesa_init_extensions,
++    .p_surface_create       = osmesa_surface_create,
++    .p_context_create       = osmesa_context_create,
++    .p_context_destroy      = osmesa_context_destroy,
++    .p_make_current         = osmesa_make_current,
++    .p_pbuffer_create       = osmesa_pbuffer_create,
++    .p_pbuffer_updated      = osmesa_pbuffer_updated,
++    .p_pbuffer_bind         = osmesa_pbuffer_bind,
++};
++
++static BOOL osmesa_load(void)
++{
++    if (osmesa_handle) return TRUE;
++    if (!(osmesa_handle = dlopen(SONAME_LIBOSMESA, RTLD_NOW | RTLD_GLOBAL)))
++    {
++        ERR("Failed to load %s: %s\n", SONAME_LIBOSMESA, dlerror());
++        return FALSE;
++    }
++
++#define LOAD_FUNCPTR(f) \
++    if (!(p_##f = dlsym(osmesa_handle, #f))) { ERR("%s not found in OSMesa\n", #f); goto err; }
++    LOAD_FUNCPTR(OSMesaCreateContextAttribs)
++    LOAD_FUNCPTR(OSMesaCreateContextExt)
++    LOAD_FUNCPTR(OSMesaDestroyContext)
++    LOAD_FUNCPTR(OSMesaMakeCurrent)
++    LOAD_FUNCPTR(OSMesaPixelStore)
++    LOAD_FUNCPTR(OSMesaGetProcAddress)
++#undef LOAD_FUNCPTR
++    return TRUE;
++
++err:
++    dlclose(osmesa_handle);
++    osmesa_handle = NULL;
++    return FALSE;
++}
++
++/**********************************************************************
++ *           WAYLAND_OpenGLInit
++ */
++UINT WAYLAND_OpenGLInit(UINT version, const struct opengl_funcs *opengl_funcs,
++                        const struct opengl_driver_funcs **driver_funcs)
++{
++    if (version != WINE_OPENGL_DRIVER_VERSION)
++    {
++        ERR("Version mismatch, opengl32 wants %u but driver has %u\n",
++            version, WINE_OPENGL_DRIVER_VERSION);
++        return STATUS_INVALID_PARAMETER;
++    }
++
++    if (!osmesa_load()) return STATUS_NOT_SUPPORTED;
++
++    funcs = opengl_funcs;
++    *driver_funcs = &osmesa_driver_funcs;
++    return STATUS_SUCCESS;
++}
++
++#endif /* HAVE_OSMESA */
+-- 
+2.47.3
+
+
+From 10bad0733c00cd8cac02935e7d9685939f8791d2 Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
+Date: Sun, 26 Jul 2026 09:21:55 +1000
+Subject: [PATCH 10/10] ntdll: debug - name the faulting caller by scanning the
+ stack on Haiku
+
+Haiku has no usable debugger attach for a Wine process mid-fault, and the
+SIGSEGV handler's own report gives only IP/SP/FP -- when the fault is a call
+through a null pointer, IP is the bad target and nothing names the caller.
+
+Walk the first 48 slots above SP, resolve each as a code address with
+LdrFindEntryForAddress2() and print the ones that land inside a loaded
+module, module-relative. The CALL's own return address is at [SP], so the
+immediate caller is normally the first hit. Limited to the first two faults
+so the fault-retry loop cannot flood the log.
+
+This is development instrumentation, kept last in the patchset so it can be
+dropped without disturbing the patches before it.
+---
+ dlls/ntdll/unix/signal_x86_64.c | 22 ++++++++++++++++++++++
+ 1 file changed, 22 insertions(+)
+
+diff --git a/dlls/ntdll/unix/signal_x86_64.c b/dlls/ntdll/unix/signal_x86_64.c
+index 932ee86..e4b1211 100644
+--- a/dlls/ntdll/unix/signal_x86_64.c
++++ b/dlls/ntdll/unix/signal_x86_64.c
+@@ -2383,6 +2383,28 @@ static void segv_handler( int signal, siginfo_t *siginfo, void *_sigcontext )
+     printf("  FP: %#" PRIx64 "\n", RBP_sig(sigcontext));
+     printf("  address: %#" PRIx64 "\n", siginfo->si_addr);
+     WriteModuleName(RIP_sig(sigcontext));
++    /* IP is the bad (null/garbage) call target; the return address the CALL
++     * pushed sits at [SP], and other return addresses remain further up the
++     * stack.  Resolving them names the caller that jumped through the null
++     * pointer -- the one thing an attach-less Haiku fault cannot otherwise
++     * give us.  Guarded so the fault-retry loop does not flood the log. */
++    {
++        static int scanned;
++        if (scanned++ < 2) {
++            addr_t sp = RSP_sig(sigcontext);
++            printf("  stack return-address scan:\n");
++            for (int i = 0; i < 48; i++) {
++                addr_t val = ((addr_t *)sp)[i];
++                PLDR_DATA_TABLE_ENTRY pmod = NULL;
++                LdrFindEntryForAddress2((void *)val, &pmod);
++                if (pmod)
++                    printf("    [sp+%#x] %#" PRIx64 "  %s +%#" PRIx64 "\n",
++                           i * 8, (UINT64)val,
++                           debugstr_w(pmod->BaseDllName.Buffer),
++                           (UINT64)(val - (addr_t)pmod->DllBase));
++            }
++        }
++    }
+     /* The Haiku port stopped here with a blocking fgetc(stdin) so a developer
+      * could inspect the fault interactively.  Anything without a usable stdin
+      * -- a DAW, any GUI app, anything started from the Deskbar -- then turns
 -- 
 2.47.3
 
