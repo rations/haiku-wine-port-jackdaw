@@ -25,6 +25,7 @@ app-emulation/wine/            drop-in replacement for the haikuports port direc
     wine.rdef.in               Deskbar icon/version resource template
 docs/
   OSMESA-GL-PLAN.md            design + test plan for the software-GL work (patch 9)
+  probes/                      standalone programs establishing that plan's facts
 attic/                         kept for reference, not built
   winehaiku.drv-11.8-abandoned.patch
   wine-7.1.recipe
