@@ -48,7 +48,8 @@ each `From:` line. **6–10 are local.**
 | 7 | Do not block in the SIGSEGV handler on Haiku | local | The port's handler ended in a blocking `fgetc(stdin)` so a developer could inspect the fault. Anything without a usable stdin — a DAW, any GUI app, anything from the Deskbar — hung there instead of letting Wine's handler recover. |
 | 8 | loader: find the loader path via `find_path()` on Haiku | local | Haiku has no `/proc`, so `get_self_exe()` returned NULL and the loader resolved `argv[0]` relative to the current directory — a bare `wine` from `PATH` failed with `could not load ntdll.so`. Fixed with `find_path(B_FIND_PATH_IMAGE_PATH)`. |
 | 9 | winewayland: add OSMesa software OpenGL backend for Haiku | local | **Experimental — see below.** Gives Wine a software GL backend (OSMesa/llvmpipe) so wined3d can create a device and D3D-drawn plug-in editors can render. Haiku's Mesa has no DRI swrast and no Wayland EGL platform, so `winewayland.drv`'s existing EGL path can never initialize there. |
-| 10 | ntdll: debug — name the faulting caller by scanning the stack | local | **Development instrumentation, not a fix.** Prints module-relative return addresses found above SP on SIGSEGV, so a call through a null pointer names its caller. Kept last so it can be dropped without disturbing anything before it. |
+| 10 | dxgi: wait for a refresh interval in `IDXGIOutput::WaitForVBlank()` | local | `WaitForVBlank()` was a stub printing a FIXME and returning `E_NOTIMPL` immediately. JUCE 8's Direct2D renderer drives all repainting from a dedicated thread that calls it in a loop, so with no wait that thread spun — measured at 62,024 calls in ~25 s, saturating a core — and the editor rendered one frame then never responded to input again. Now sleeps to the next refresh-interval boundary. Not Haiku-specific: the same gap is why these plug-ins are reported as needing DXVK on Linux, DXVK shipping its own DXGI with a real vblank wait. |
+| 11 | ntdll: debug — name the faulting caller by scanning the stack | local | **Development instrumentation, not a fix.** Prints module-relative return addresses found above SP on SIGSEGV, so a call through a null pointer names its caller. Kept last so it can be dropped without disturbing anything before it. |
 
 Patch 8 removes the need for the `export WINELOADER=/boot/system/bin/wine` workaround earlier
 Haiku Wine builds required in `~/config/settings/profile`: winegcc's generated `.exe` wrapper
@@ -56,7 +57,7 @@ scripts fall back to invoking a bare `wine`, which now works from any directory.
 
 ### Dropping the debug patch
 
-Patch 10 writes to stdout on every fault. To build without it, delete the last patch from
+Patch 11 writes to stdout on every fault. To build without it, delete the last patch from
 `patches/wine-11.8.patchset` (everything from its `From <sha>` line to end of file) and bump
 `REVISION`. Nothing else references it.
 
@@ -94,20 +95,43 @@ cd ~/haikuports
 haikuporter -y -j8 wine-11.8
 ```
 
-The package lands in `~/haikuports/packages/wine-11.8-7-x86_64.hpkg`. When rebuilding over a
+The package lands in `~/haikuports/packages/wine-11.8-8-x86_64.hpkg`. When rebuilding over a
 previous attempt, `haikuporter -y -c wine-11.8` first to clean the work directory — otherwise
 the old, already-patched source tree is reused.
 
 Build dependencies are declared in the recipe (`BUILD_REQUIRES`/`BUILD_PREREQUIRES`) and include
 llvm21 + clang + lld for the PE cross-build; `haikuporter` will tell you what is missing.
 
-> **Never hand-edit `work-11.8/sources/`.** It is haikuporter's scratch directory and
-> `haikuporter -c` deletes it. Every source change belongs in the patchset — see below.
+### Iterating without an hour-long rebuild
+
+A clean rebuild is ~55 minutes, which is not a per-edit cycle. Two things make a fast loop
+possible:
+
+- `haikuporter` applies `.patchset` files **with git**, so `work-11.8/sources/wine-wine-11.8`
+  is a git repo whose `HEAD` is the pristine tarball plus these patches. Editing it and
+  rebuilding one target inside the chroot (`haikuporter -E wine-11.8`, then
+  `make -j8 dlls/dxgi/dxgi.dll`) takes minutes, and `git diff` there is exactly your change.
+- Nothing needs to be installed to test it. Wine sets its internal `build_dir` when its
+  `ntdll.so` sits under `<tree>/dlls/ntdll`, and then omits the installed `/boot/system/lib/wine`
+  from the DLL search path entirely — so the build tree wins outright:
+
+  ```sh
+  export WINELOADER=<work tree>/loader/wine
+  ```
+
+  (`WINEDLLPATH` does *not* work for this: its entries are appended *after* the installed
+  directory, so an installed builtin always wins.)
+
+> **The catch: `haikuporter -c` deletes `work-11.8/sources/` without warning.** An edit that
+> exists only there is one command from being lost — that has happened twice here. Replay every
+> such edit into the patchset (`git diff` in the work tree, apply it to the tree the patchset is
+> generated from) *before* any clean rebuild. Every source change ultimately belongs in the
+> patchset — see below.
 
 ### Installing
 
 ```sh
-pkgman install ./wine-11.8-7-x86_64.hpkg
+pkgman install ./wine-11.8-8-x86_64.hpkg
 ```
 
 - **x86_64**, and **Haiku hrev59867 or newer** (`requires: haiku>=r1~beta6_hrev59867-1`).
@@ -175,8 +199,9 @@ driver is selected — the `null` driver has no GL backend at all.
 
 | REVISION | Notes |
 |---|---|
-| 7 | Declares `devel:libOSMesa` / `lib:libOSMesa`. Same sources as 6. **Not yet built.** |
-| 6 | Last package actually built (laptop, 2026-07-24). Its sources are what patches 1–10 now reproduce; the OSMesa pixel-format fix and the stack scanner had been hand-edited into the work tree and existed in no patchset until this repo captured them. |
+| 8 | Adds patch 10 (`dxgi: WaitForVBlank`). Built on the laptop 2026-07-27 (hrev59899, `EXIT=0`, `HAVE_OSMESA 1` confirmed in the work tree's `config.h`). **Observed working:** Direct3D-drawn plug-in editors — Nembrini Audio VST3s under vstbridge in jackDAW — became interactive; before this they rendered one frame and ignored all mouse and keyboard input, including clicks delivered straight to the floating Wayland window. Also folds in REVISION 7's OSMesa dependency declarations, which were never built on their own. |
+| 7 | Declares `devel:libOSMesa` / `lib:libOSMesa`. Same sources as 6. **Never built** — superseded by 8 before a package was produced. Verification checklist retained because it has not been performed: after install, verify in order: (a) `/boot/system/bin/wine --version` prints `wine-11.8`; (b) `objdump -T /boot/system/bin/wine \| grep find_path` shows the import — **REV6 shipped without patch 08 compiled in**, so a bare `wine` from PATH failed with `could not load ntdll.so` and needed a `WINELOADER`+`WINEDLLPATH` workaround in `~/config/settings/profile`; (c) a bare `wine --version` works. Only then drop the profile workaround. (`find_path(B_FIND_PATH_IMAGE_PATH)` is verified working on hrev59899, so patch 08 is the fix once actually built in.) |
+| 6 | Built on the laptop 2026-07-24; the last package before 8. Its sources are what patches 1–9 and 11 now reproduce — patch 10 is new in REVISION 8. The OSMesa pixel-format fix and the stack scanner had been hand-edited into the build work tree and existed in no patchset until this repo captured them. |
 | 3–5 | Superseded. |
 
 ## Attic
