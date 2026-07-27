@@ -209,21 +209,49 @@ same Wayland presentation.
 
 ## 5. Test plan (each gate green before the next)
 
-1. **Unit probe (already passing):** `osprobe` prints GL 4.5 + correct pixel. ✅
+**Outcome: the target gate is green as of 2026-07-27.** Reaching it needed one thing this plan
+did not anticipate — see the note after the list.
+
+1. **Unit probe:** `osprobe` prints GL 4.5 + correct pixel. ✅
 2. **Wine GL smoke:** build the patched Wine; run a trivial Win GL app (or
    `WINEDEBUG=+wgl,+opengl wine winecfg`'s GL detection) and confirm `wglCreateContext` /
    `glGetString(GL_VERSION)` returns `4.5 ... llvmpipe` — i.e. `p_get_proc_address` +
    `p_context_create` path works end to end. Use `wine glxgears`-equivalent or Wine's
    `dlls/opengl32/tests` if runnable.
+   ⬜ **Never run as a discrete test.** Gates 3–5 passing entails this path works, but no
+   isolated GL smoke test was performed — so a regression here would first show up as a
+   failure further down.
 3. **wined3d:** run a small D3D9/11 sample (or `WINEDEBUG=+d3d` on any D3D app). The old
    `wined3d_caps_gl_ctx_create Failed to find a suitable pixel format` must be gone and a
-   device must create against llvmpipe.
+   device must create against llvmpipe. ✅ — that failure is gone and devices create.
 4. **Present path:** confirm a rendered frame appears in the floating Wayland window (color
    correct, not swizzled, not vertically flipped — validates OSMESA_BGRA + `OSMESA_Y_UP=0`).
+   ✅ **with a caveat:** editors display and are usable, but no deliberate colour-swizzle or
+   vertical-flip check was made — this passed on "the GUI looks right", not on a test pattern.
 5. **Target:** in jackDAW-haiku, add an NA VST3 (e.g. NA Black) → open the FX editor → the D3D
    GUI renders and is interactive (knob drags update). Software rate is expected but usable.
    Confirm audio still runs and closing the FX window no longer forces a jackd/jackDAW restart
    (that symptom was scoped to the non-displaying plugins and should vanish once they display).
+   ✅ **for render + interactivity** (REVISION 8, hrev59899). ⬜ The FX-window-close /
+   `jackd` restart condition has **not** been re-tested.
+
+### What this plan missed
+
+Rendering and interactivity turned out to be two separate problems. This backend delivered the
+first: with it the NA editors display, without it they do not. They then stayed frozen — one
+painted frame, no response to mouse or keyboard, including clicks delivered straight to the
+floating Wayland window, bypassing all of vstbridge's input injection.
+
+The cause was outside the GL path entirely: `dxgi_output_WaitForVBlank()` was a stub returning
+`E_NOTIMPL` without waiting. JUCE 8's Direct2D renderer drives its whole repaint cadence from a
+thread that calls it in a loop, so that thread spun — 62,024 calls in ~25 s, saturating a core
+— while Wine was delivering input correctly all along. Making it sleep to the next refresh
+boundary is the fix, and it is generic Wine rather than anything Haiku-specific: the same gap
+is why these plug-ins are reported as needing DXVK on Linux, DXVK shipping its own DXGI with a
+real vblank wait.
+
+The lesson for this plan: "the GL backend works" and "the app is usable" are different claims,
+and gate 5 is the only one that distinguishes them.
 
 ---
 

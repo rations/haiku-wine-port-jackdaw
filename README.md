@@ -47,7 +47,7 @@ each `From:` line. **6–10 are local.**
 | 6 | Run static initializers in Winelib modules on Haiku | local | Winelib modules never ran their C++ static constructors. vstbridge's Wine host is a C++ Winelib module, so without this it starts with uninitialised globals. **This is the essential one.** |
 | 7 | Do not block in the SIGSEGV handler on Haiku | local | The port's handler ended in a blocking `fgetc(stdin)` so a developer could inspect the fault. Anything without a usable stdin — a DAW, any GUI app, anything from the Deskbar — hung there instead of letting Wine's handler recover. |
 | 8 | loader: find the loader path via `find_path()` on Haiku | local | Haiku has no `/proc`, so `get_self_exe()` returned NULL and the loader resolved `argv[0]` relative to the current directory — a bare `wine` from `PATH` failed with `could not load ntdll.so`. Fixed with `find_path(B_FIND_PATH_IMAGE_PATH)`. |
-| 9 | winewayland: add OSMesa software OpenGL backend for Haiku | local | **Experimental — see below.** Gives Wine a software GL backend (OSMesa/llvmpipe) so wined3d can create a device and D3D-drawn plug-in editors can render. Haiku's Mesa has no DRI swrast and no Wayland EGL platform, so `winewayland.drv`'s existing EGL path can never initialize there. |
+| 9 | winewayland: add OSMesa software OpenGL backend for Haiku | local | Gives Wine a software GL backend (OSMesa/llvmpipe) so wined3d can create a device and D3D-drawn plug-in editors can render — **without it those editors do not display at all**. Haiku's Mesa has no DRI swrast and no Wayland EGL platform, so `winewayland.drv`'s existing EGL path can never initialize there. Confirmed rendering; see the gate table below for what is and is not verified. |
 | 10 | dxgi: wait for a refresh interval in `IDXGIOutput::WaitForVBlank()` | local | `WaitForVBlank()` was a stub printing a FIXME and returning `E_NOTIMPL` immediately. JUCE 8's Direct2D renderer drives all repainting from a dedicated thread that calls it in a loop, so with no wait that thread spun — measured at 62,024 calls in ~25 s, saturating a core — and the editor rendered one frame then never responded to input again. Now sleeps to the next refresh-interval boundary. Not Haiku-specific: the same gap is why these plug-ins are reported as needing DXVK on Linux, DXVK shipping its own DXGI with a real vblank wait. |
 | 11 | ntdll: debug — name the faulting caller by scanning the stack | local | **Development instrumentation, not a fix.** Prints module-relative return addresses found above SP on SIGSEGV, so a call through a null pointer names its caller. Kept last so it can be dropped without disturbing anything before it. |
 
@@ -63,11 +63,28 @@ Patch 11 writes to stdout on every fault. To build without it, delete the last p
 
 ### Status of the OSMesa backend (patch 9)
 
-**Not yet confirmed working — treat it as in progress.** Of the five gates in
-[docs/OSMESA-GL-PLAN.md](docs/OSMESA-GL-PLAN.md) §5, only gate 1 (the standalone `osprobe`
-showing GL 4.5 / llvmpipe) is marked passing. Patch 10 exists because the WGL path was still
-being debugged. The verified groundwork, and why the alternatives (DXVK/Vulkan WSI, porting
-Mesa's Wayland-EGL platform) are dead ends on Haiku, is all in that document.
+**Confirmed working for the case it was written for.** Patch 9 is what makes Direct3D-drawn
+plug-in editors render at all: without it the Nembrini Audio VST3 editors did not display,
+with it they do. Rendering has held since REVISION 6; since REVISION 8, which adds patch 10,
+those editors are also interactive.
+
+Against the five gates in [docs/OSMESA-GL-PLAN.md](docs/OSMESA-GL-PLAN.md) §5:
+
+| Gate | Status |
+|---|---|
+| 1 — standalone `osprobe` shows GL 4.5 / llvmpipe | **passing** |
+| 2 — Wine GL smoke test (`wglCreateContext`, `glGetString`) | never run as a discrete test; entailed by 3–5 passing |
+| 3 — wined3d creates a device against llvmpipe | **passing** — the old `wined3d_caps_gl_ctx_create Failed to find a suitable pixel format` is gone |
+| 4 — rendered frame reaches the floating Wayland window | **passing** — editors display and are usable; no formal colour/orientation check was performed |
+| 5 — NA VST3 in jackDAW: D3D GUI renders **and is interactive** | **passing, 2026-07-27** (REVISION 8) |
+
+Still unverified: gate 5's secondary condition — that closing the FX window no longer forces a
+`jackd`/jackDAW restart. That symptom was scoped to the non-displaying plug-ins and was
+expected to vanish once they displayed, but it has not been re-tested.
+
+Patch 11, the debug stack scanner, dates from debugging this WGL path and is not part of the
+fix. The verified groundwork, and why the alternatives (DXVK/Vulkan WSI, porting Mesa's
+Wayland-EGL platform) are dead ends on Haiku, is all in that document.
 
 Patch 9 is gated at build time on `HAVE_OSMESA`, which `configure` derives from `GL/osmesa.h`
 plus `libOSMesa`. **If those are missing the port still builds — silently, without software
