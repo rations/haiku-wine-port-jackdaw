@@ -77,10 +77,10 @@ Against the five gates in [docs/OSMESA-GL-PLAN.md](docs/OSMESA-GL-PLAN.md) §5:
 | 3 — wined3d creates a device against llvmpipe | **passing** — the old `wined3d_caps_gl_ctx_create Failed to find a suitable pixel format` is gone |
 | 4 — rendered frame reaches the floating Wayland window | **passing** — editors display and are usable; no formal colour/orientation check was performed |
 | 5 — NA VST3 in jackDAW: D3D GUI renders **and is interactive** | **passing, 2026-07-27** (REVISION 8) |
+| 5b — repeated open/close of an editor leaves `jackd` and jackDAW running | **passing, 2026-07-27** — the forced-restart symptom is gone |
 
-Still unverified: gate 5's secondary condition — that closing the FX window no longer forces a
-`jackd`/jackDAW restart. That symptom was scoped to the non-displaying plug-ins and was
-expected to vanish once they displayed, but it has not been re-tested.
+Gate 2 is the only one never exercised on its own, so a regression in the raw WGL path would
+first surface as a failure in one of the gates below it rather than as a clear GL error.
 
 Patch 11, the debug stack scanner, dates from debugging this WGL path and is not part of the
 fix. The verified groundwork, and why the alternatives (DXVK/Vulkan WSI, porting Mesa's

@@ -209,8 +209,9 @@ same Wayland presentation.
 
 ## 5. Test plan (each gate green before the next)
 
-**Outcome: the target gate is green as of 2026-07-27.** Reaching it needed one thing this plan
-did not anticipate — see the note after the list.
+**Outcome: the target gate is fully green as of 2026-07-27.** Reaching it needed one thing this
+plan did not anticipate — see the note after the list. Gate 2 remains the only one never run in
+isolation.
 
 1. **Unit probe:** `osprobe` prints GL 4.5 + correct pixel. ✅
 2. **Wine GL smoke:** build the patched Wine; run a trivial Win GL app (or
@@ -232,8 +233,9 @@ did not anticipate — see the note after the list.
    GUI renders and is interactive (knob drags update). Software rate is expected but usable.
    Confirm audio still runs and closing the FX window no longer forces a jackd/jackDAW restart
    (that symptom was scoped to the non-displaying plugins and should vanish once they display).
-   ✅ **for render + interactivity** (REVISION 8, hrev59899). ⬜ The FX-window-close /
-   `jackd` restart condition has **not** been re-tested.
+   ✅ **fully green** (REVISION 8, hrev59899, 2026-07-27): the GUI renders, it is interactive,
+   and repeated open/close cycles of the plug-in editors leave both `jackd` and jackDAW
+   running — the forced-restart symptom is gone, as predicted once the plug-ins displayed.
 
 ### What this plan missed
 
