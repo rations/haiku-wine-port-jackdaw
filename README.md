@@ -112,9 +112,33 @@ cd ~/haikuports
 haikuporter -y -j8 wine-11.8
 ```
 
-The package lands in `~/haikuports/packages/wine-11.8-8-x86_64.hpkg`. When rebuilding over a
-previous attempt, `haikuporter -y -c wine-11.8` first to clean the work directory — otherwise
-the old, already-patched source tree is reused.
+The package lands in `~/haikuports/packages/wine-11.8-9-x86_64.hpkg`.
+
+> **Always `haikuporter -y -c wine-11.8` first when `REVISION` changed.** Not just when the
+> patchset changed — **the revision is compiled into the binaries.** `configure` records
+> `prefix = /packages/wine-<version>-<revision>/.self`, and Wine bakes that into `bindir`/
+> `libdir`; the loader then resolves `ntdll.so` through it. Skipping `-c` after only a recipe
+> edit re-runs `configure` (so the `Makefile` says the new revision) but recompiles nothing,
+> because no source changed — and the package ships binaries still pointing at the **previous**
+> revision's package directory.
+>
+> That package works perfectly on any machine where the old revision is still installed, and
+> fails on every machine where it is not, with:
+>
+> ```
+> wine: could not load ntdll.so: No such file or directory
+> runtime_loader: Cannot open file /packages/wine-11.8-8/.self/lib/wine/x86_64-unix/ntdll.so
+> ```
+>
+> Diagnose it directly — the shipped binary disagrees with the recipe:
+>
+> ```sh
+> strings -a /boot/system/bin/wine | grep packages/wine   # must match the installed revision
+> ```
+>
+> A tell-tale sign is a suspiciously fast rebuild and binaries whose hashes are *identical* to
+> the previous revision's. That is not reassurance that the payload is unchanged; it is the
+> symptom.
 
 Build dependencies are declared in the recipe (`BUILD_REQUIRES`/`BUILD_PREREQUIRES`) and include
 llvm21 + clang + lld for the PE cross-build; `haikuporter` will tell you what is missing.
@@ -302,7 +326,7 @@ WINEDEBUG=+winediag wine notepad 2>&1 | head       # the ERR above, if any
 
 | REVISION | Notes |
 |---|---|
-| 9 | **Recipe only — the patchset is byte-identical to REVISION 8.** Built on the laptop 2026-07-28 (hrev59899, `EXIT=0`, ~17 min since no `-c` was needed). `package list -i` on the `.hpkg` confirms the new `requires:` set, including `lib:libusb_1.0>=0.3.0` replacing `lib:libusb>=0.1.7`. **Not yet verified on a clean machine** — the test that matters is installing it somewhere without `wayland`/`wayland_server`/`libxkbcommon` present and seeing a GUI appear. Declares the runtime dependencies `winewayland.so` actually links (`lib:libwayland_client`, `lib:libwayland_egl`, `lib:libxkbcommon`, `lib:libxkbregistry`) plus `lib:wayland_server_inproc` for Haiku's in-process compositor, and corrects `lib:libusb` to `lib:libusb_1.0`. Found when REVISION 8 was installed on a second Haiku machine: it installed cleanly, bridged plug-ins fine, and had no GUI at all, because none of those packages were present and nothing had declared them. The build laptop happened to have them via `gtk3`. See *Installing* and *Graphics driver*. |
+| 9 | **Recipe only — the patchset is byte-identical to REVISION 8.** First built 2026-07-28 *without* `haikuporter -c` (~17 min); that package was **broken** and had to be rebuilt cleanly. Because no source changed, `make` recompiled nothing, so the binaries kept REVISION 8's compiled-in `/packages/wine-11.8-8/.self` prefix while the recipe said 9. It ran fine on the build laptop, where wine-11.8-8 was still installed, and died on a machine that had only 11.8-9 with `wine: could not load ntdll.so` — which surfaced as VST plug-ins silently failing to list, because vstbridge's scan helper aborts on empty `wine --version` output. See the warning under *Building*: a `REVISION` bump alone requires a clean build. `package list -i` on the `.hpkg` confirms the new `requires:` set, including `lib:libusb_1.0>=0.3.0` replacing `lib:libusb>=0.1.7`. Declares the runtime dependencies `winewayland.so` actually links (`lib:libwayland_client`, `lib:libwayland_egl`, `lib:libxkbcommon`, `lib:libxkbregistry`) plus `lib:wayland_server_inproc` for Haiku's in-process compositor, and corrects `lib:libusb` to `lib:libusb_1.0`. Found when REVISION 8 was installed on a second Haiku machine: it installed cleanly, bridged plug-ins fine, and had no GUI at all, because none of those packages were present and nothing had declared them. The build laptop happened to have them via `gtk3`. See *Installing* and *Graphics driver*. |
 | 8 | Adds patch 10 (`dxgi: WaitForVBlank`). Built on the laptop 2026-07-27 (hrev59899, `EXIT=0`, `HAVE_OSMESA 1` confirmed in the work tree's `config.h`). **Observed working:** Direct3D-drawn plug-in editors — Nembrini Audio VST3s under vstbridge in jackDAW — became interactive; before this they rendered one frame and ignored all mouse and keyboard input, including clicks delivered straight to the floating Wayland window. Also folds in REVISION 7's OSMesa dependency declarations, which were never built on their own. |
 | 7 | Declares `devel:libOSMesa` / `lib:libOSMesa`. Same sources as 6. **Never built** — superseded by 8 before a package was produced. Verification checklist retained because it has not been performed: after install, verify in order: (a) `/boot/system/bin/wine --version` prints `wine-11.8`; (b) `objdump -T /boot/system/bin/wine \| grep find_path` shows the import — **REV6 shipped without patch 08 compiled in**, so a bare `wine` from PATH failed with `could not load ntdll.so` and needed a `WINELOADER`+`WINEDLLPATH` workaround in `~/config/settings/profile`; (c) a bare `wine --version` works. Only then drop the profile workaround. (`find_path(B_FIND_PATH_IMAGE_PATH)` is verified working on hrev59899, so patch 08 is the fix once actually built in.) |
 | 6 | Built on the laptop 2026-07-24; the last package before 8. Its sources are what patches 1–9 and 11 now reproduce — patch 10 is new in REVISION 8. The OSMesa pixel-format fix and the stack scanner had been hand-edited into the build work tree and existed in no patchset until this repo captured them. |
