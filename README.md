@@ -17,9 +17,9 @@ downloads the upstream tarball (checksum pinned in the recipe) and applies the p
 
 ```
 app-emulation/wine/            drop-in replacement for the haikuports port directory
-  wine-11.8.recipe             REVISION=7
+  wine-11.8.recipe             REVISION=9
   patches/
-    wine-11.8.patchset         the 10 patches below (this is the deliverable)
+    wine-11.8.patchset         the 11 patches below (this is the deliverable)
     wine-11.8-home.patchset    optional, not applied by the recipe (see Optional patches)
   additional-files/
     wine.rdef.in               Deskbar icon/version resource template
@@ -148,14 +148,43 @@ possible:
 ### Installing
 
 ```sh
-pkgman install ./wine-11.8-8-x86_64.hpkg
+pkgman install ./wine-11.8-9-x86_64.hpkg
 ```
 
 - **x86_64**, and **Haiku hrev59867 or newer** (`requires: haiku>=r1~beta6_hrev59867-1`).
   `haikuporter` bakes the build machine's revision in as a floor, so an older nightly refuses to
   install it. Newer is fine — this is a userland package, not a kernel add-on.
-- `lib:libfreetype`, `lib:libOSMesa`, `lib:libusb` and `lib:libvulkan`, which `pkgman` pulls
-  from HaikuPorts automatically. If the target machine is offline, bring those along too.
+- Runtime dependencies, all pulled from HaikuPorts automatically. If the target machine is
+  offline, bring them along too.
+
+  | Declared since | Resolvable | Package |
+  |---|---|---|
+  | always | `lib:libfreetype` | `freetype` |
+  | always | `lib:libvulkan` | `vulkan` |
+  | REVISION 7 | `lib:libOSMesa` | `mesa` |
+  | **REVISION 9** | `lib:libwayland_client`, `lib:libwayland_egl` | `wayland` |
+  | **REVISION 9** | `lib:libxkbcommon`, `lib:libxkbregistry` | `libxkbcommon` |
+  | **REVISION 9** | `lib:wayland_server_inproc` | `wayland_server` |
+  | **REVISION 9**, corrected | `lib:libusb_1.0` | `libusb` |
+
+  The last row was `lib:libusb` through REVISION 8, which resolves to `libusb_compat` — the
+  libusb-0.1 API. `wineusb.so` links `libusb-1.0.so.0`, provided by the `libusb` package as
+  `lib:libusb_1.0`. Nothing in the port links libusb-0.1 at all, so the old entry pulled in a
+  library no module used while leaving the one `wineusb.so` needs undeclared.
+
+**REVISION 8 and earlier declared none of the Wayland ones, and that made the package
+un-GUI-able on a machine that did not already have them.** `winewayland.so` links
+`libwayland-client`, `libwayland-egl`, `libxkbcommon` and `libxkbregistry` directly
+(`objdump -p` shows them as `NEEDED`), and a Haiku recipe's `REQUIRES` is hand-written —
+nothing scans the binaries for you. On a machine with those libraries already installed for
+other reasons the package worked; on a clean one it installed happily and then had no display
+driver. See *Graphics driver* below for the failure signature.
+
+If you are stuck on an older package, the missing pieces install by hand:
+
+```sh
+pkgman install wayland wayland_server libxkbcommon
+```
 
 ## Changing a patch
 
@@ -212,10 +241,68 @@ vstbridge logs a warning naming the current driver whenever it is not `null`.
 Note that patch 9's software GL lives in `winewayland.drv`, so it is only in play when that
 driver is selected — the `null` driver has no GL backend at all.
 
+### How a Wayland window exists on Haiku at all
+
+There is no compositor process. The `wayland_server` package installs exactly one file,
+`lib/wayland-server-inproc.so` (`package list -p`), and `libwayland-client` loads it at runtime:
+the library imports `dlopen`/`dlsym`, carries the literal string `wayland-server-inproc.so`, and
+does **not** list it in `NEEDED`. Haiku's Wayland is X512's fork
+(`github.com/X547/wayland`), and its server port describes itself as an add-on that "does not
+run as a separate server process but loads as an add-on into each Wayland client instead …
+uses existing Haiku capabilities such as native Haiku windows and bitmap drawing API".
+
+That is why `ps` shows nothing compositor-shaped and `WAYLAND_DISPLAY` is unset, yet a plug-in
+editor still gets a real floating window.
+
+It is also why the dependency is easy to miss. `wayland` does not require `wayland_server`, and
+neither did this port before REVISION 9. On the build laptop the only installed package that
+requires `lib:wayland_server_inproc` is **`gtk3`** — so the in-process compositor was present
+there by coincidence, dragged in behind some unrelated GTK application, and every Wine GUI test
+to date silently depended on it.
+
+### When no driver loads at all
+
+`explorer.exe` picks the driver by calling `LoadLibraryW("winewayland.drv")` and writing the
+result to `GraphicsDriver` under `HKLM\System\CurrentControlSet\Control\Video\{guid}\0000`
+(`programs/explorer/desktop.c:998,1037,1063`). If the load fails it writes `DriverError`
+instead (`desktop.c:1066`), and `win32u` falls back to a null driver whose `nodrv_CreateWindow`
+fails **every** window creation after logging one line (`dlls/win32u/driver.c:762-774`):
+
+```
+err:winediag:nodrv_CreateWindow Application tried to create a window, but no driver could be loaded.
+err:winediag:nodrv_CreateWindow L"Make sure that your display server is running and that its variables are set."
+```
+
+What this looks like from the outside is *not* a crash:
+
+- Wine runs and `wine --version` works.
+- A bridged plug-in scans and loads, and appears in jackDAW's FX window list — but opening its
+  editor shows nothing.
+- **The "The Wine configuration in ... is being updated, please wait..." dialog never appears on
+  first run.** That text is `IDD_WAITDLG`, a dialog resource (`programs/wineboot/wineboot.rc:45`),
+  so it is the first casualty. Its absence on a fresh prefix is the cleanest early signal that no
+  display driver loaded.
+
+  **The prefix is still created correctly** — the dialog is decorative.
+  `update_wineprefix()` does its work in `rundll32` child processes and waits on the *process*
+  handle, not the window; `show_wait_window()`'s return value is never checked, and
+  `install_root_pnp_devices()` and `update_user_profile()` run afterwards regardless
+  (`programs/wineboot/wineboot.c:1511-1516,1660-1690`). So there is no need to delete and
+  recreate `~/.wine` after installing the missing packages.
+
+To confirm on a suspect machine:
+
+```sh
+objdump -p /boot/system/lib/wine/x86_64-unix/winewayland.so | grep NEEDED   # what it wants
+wine reg query 'HKLM\System\CurrentControlSet\Control\Video' /s | grep -i driver
+WINEDEBUG=+winediag wine notepad 2>&1 | head       # the ERR above, if any
+```
+
 ## Revision history
 
 | REVISION | Notes |
 |---|---|
+| 9 | **Recipe only — the patchset is byte-identical to REVISION 8. Not yet built.** Declares the runtime dependencies `winewayland.so` actually links (`lib:libwayland_client`, `lib:libwayland_egl`, `lib:libxkbcommon`, `lib:libxkbregistry`) plus `lib:wayland_server_inproc` for Haiku's in-process compositor, and corrects `lib:libusb` to `lib:libusb_1.0`. Found when REVISION 8 was installed on a second Haiku machine: it installed cleanly, bridged plug-ins fine, and had no GUI at all, because none of those packages were present and nothing had declared them. The build laptop happened to have them via `gtk3`. See *Installing* and *Graphics driver*. |
 | 8 | Adds patch 10 (`dxgi: WaitForVBlank`). Built on the laptop 2026-07-27 (hrev59899, `EXIT=0`, `HAVE_OSMESA 1` confirmed in the work tree's `config.h`). **Observed working:** Direct3D-drawn plug-in editors — Nembrini Audio VST3s under vstbridge in jackDAW — became interactive; before this they rendered one frame and ignored all mouse and keyboard input, including clicks delivered straight to the floating Wayland window. Also folds in REVISION 7's OSMesa dependency declarations, which were never built on their own. |
 | 7 | Declares `devel:libOSMesa` / `lib:libOSMesa`. Same sources as 6. **Never built** — superseded by 8 before a package was produced. Verification checklist retained because it has not been performed: after install, verify in order: (a) `/boot/system/bin/wine --version` prints `wine-11.8`; (b) `objdump -T /boot/system/bin/wine \| grep find_path` shows the import — **REV6 shipped without patch 08 compiled in**, so a bare `wine` from PATH failed with `could not load ntdll.so` and needed a `WINELOADER`+`WINEDLLPATH` workaround in `~/config/settings/profile`; (c) a bare `wine --version` works. Only then drop the profile workaround. (`find_path(B_FIND_PATH_IMAGE_PATH)` is verified working on hrev59899, so patch 08 is the fix once actually built in.) |
 | 6 | Built on the laptop 2026-07-24; the last package before 8. Its sources are what patches 1–9 and 11 now reproduce — patch 10 is new in REVISION 8. The OSMesa pixel-format fix and the stack scanner had been hand-edited into the build work tree and existed in no patchset until this repo captured them. |
