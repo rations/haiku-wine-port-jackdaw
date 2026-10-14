@@ -1,6 +1,6 @@
 # haiku-wine-port
 
-Haiku patches for **Wine 11.8**, packaged as a HaikuPorts port. They exist so that
+Haiku patches for **Wine 11.19**, packaged as a HaikuPorts port. They exist so that
 [vstbridge-haiku](https://github.com/rations/vstbridge-haiku) can run **Windows VST2 and VST3
 plug-ins** inside [jackDAW-haiku](https://github.com/rations/jackDAW-haiku) — the stock
 HaikuPorts Wine package is missing the Haiku fixes the bridge depends on.
@@ -17,14 +17,14 @@ downloads the upstream tarball (checksum pinned in the recipe) and applies the p
 
 ```
 app-emulation/wine/            drop-in replacement for the haikuports port directory
-  wine-11.8.recipe             REVISION=10
+  wine-11.19.recipe            REVISION=1
   patches/
-    wine-11.8.patchset         the 11 patches below (this is the deliverable)
+    wine-11.19.patchset        the 11 patches below (this is the deliverable)
     wine-11.8-home.patchset    optional, not applied by the recipe (see Optional patches)
   additional-files/
     wine.rdef.in               Deskbar icon/version resource template
 docs/
-  OSMESA-GL-PLAN.md            design + test plan for the software-GL work (patch 9)
+  OSMESA-GL-PLAN.md            design + test plan for the software-GL work (patch 8)
   probes/                      standalone programs establishing that plan's facts
 attic/                         kept for reference, not built
   winehaiku.drv-11.8-abandoned.patch
@@ -34,41 +34,50 @@ attic/                         kept for reference, not built
 
 ## The patchset
 
-Ten patches. **1–5 are upstream HaikuPorts', unchanged**, with original authorship preserved in
-each `From:` line. **6–10 are local.**
+Eleven patches. **1–4 are upstream HaikuPorts'**, with original authorship preserved in each
+`From:` line. **5–11 are local.**
 
 | # | Patch | Author | Why |
 |---|---|---|---|
 | 1 | Add Wayland input header | X512 | upstream |
-| 2 | 11.8 patches | X512 | upstream — the bulk of the Haiku port |
-| 3 | Define `get_current_thread_data` | Peppersawce | upstream |
-| 4 | Disable Bluetooth on Beta 5 | Peppersawce | upstream |
-| 5 | Opensound support | Ken Mays | upstream — audio |
-| 6 | Run static initializers in Winelib modules on Haiku | local | Winelib modules never ran their C++ static constructors. vstbridge's Wine host is a C++ Winelib module, so without this it starts with uninitialised globals. **This is the essential one.** |
-| 7 | Do not block in the SIGSEGV handler on Haiku | local | The port's handler ended in a blocking `fgetc(stdin)` so a developer could inspect the fault. Anything without a usable stdin — a DAW, any GUI app, anything from the Deskbar — hung there instead of letting Wine's handler recover. |
-| 8 | loader: find the loader path via `find_path()` on Haiku | local | Haiku has no `/proc`, so `get_self_exe()` returned NULL and the loader resolved `argv[0]` relative to the current directory — a bare `wine` from `PATH` failed with `could not load ntdll.so`. Fixed with `find_path(B_FIND_PATH_IMAGE_PATH)`. |
-| 9 | winewayland: add OSMesa software OpenGL backend for Haiku | local | Gives Wine a software GL backend (OSMesa/llvmpipe) so wined3d can create a device and D3D-drawn plug-in editors can render — **without it those editors do not display at all**. Haiku's Mesa has no DRI swrast and no Wayland EGL platform, so `winewayland.drv`'s existing EGL path can never initialize there. Confirmed rendering; see the gate table below for what is and is not verified. |
-| 10 | dxgi: wait for a refresh interval in `IDXGIOutput::WaitForVBlank()` | local | `WaitForVBlank()` was a stub printing a FIXME and returning `E_NOTIMPL` immediately. JUCE 8's Direct2D renderer drives all repainting from a dedicated thread that calls it in a loop, so with no wait that thread spun — measured at 62,024 calls in ~25 s, saturating a core — and the editor rendered one frame then never responded to input again. Now sleeps to the next refresh-interval boundary. Not Haiku-specific: the same gap is why these plug-ins are reported as needing DXVK on Linux, DXVK shipping its own DXGI with a real vblank wait. |
-| 11 | ntdll: debug — name the faulting caller by scanning the stack | local | **Development instrumentation, not a fix.** Prints module-relative return addresses found above SP on SIGSEGV, so a call through a null pointer names its caller. Kept last so it can be dropped without disturbing anything before it. |
+| 2 | 11.8 patches | X512 | upstream — the bulk of the Haiku port. Rebased onto 11.19 with two conflicts resolved; the rebase note is in the commit body. |
+| 3 | Disable Bluetooth on Beta 5 | Peppersawce | upstream |
+| 4 | Opensound support | Ken Mays | upstream — audio |
+| 5 | Run static initializers in Winelib modules on Haiku | local | Winelib modules never ran their C++ static constructors. vstbridge's Wine host is a C++ Winelib module, so without this it starts with uninitialised globals. **This is the essential one.** |
+| 6 | Do not block in the SIGSEGV handler on Haiku | local | The port's handler ended in a blocking `fgetc(stdin)` so a developer could inspect the fault. Anything without a usable stdin — a DAW, any GUI app, anything from the Deskbar — hung there instead of letting Wine's handler recover. |
+| 7 | loader: find the loader path via `find_path()` on Haiku | local | Haiku has no `/proc`, so `get_self_exe()` returned NULL and the loader resolved `argv[0]` relative to the current directory — a bare `wine` from `PATH` failed with `could not load ntdll.so`. Fixed with `find_path(B_FIND_PATH_IMAGE_PATH)`. |
+| 8 | winewayland: add OSMesa software OpenGL backend for Haiku | local | Gives Wine a software GL backend (OSMesa/llvmpipe) so wined3d can create a device and D3D-drawn plug-in editors can render — **without it those editors do not display at all**. Haiku's Mesa has no DRI swrast and no Wayland EGL platform, so `winewayland.drv`'s existing EGL path can never initialize there. Ported to Wine 11.19's GL driver interface; see the status below. |
+| 9 | dxgi: wait for a refresh interval in `IDXGIOutput::WaitForVBlank()` | local | `WaitForVBlank()` was a stub printing a FIXME and returning `E_NOTIMPL` immediately. JUCE 8's Direct2D renderer drives all repainting from a dedicated thread that calls it in a loop, so with no wait that thread spun — measured at 62,024 calls in ~25 s, saturating a core — and the editor rendered one frame then never responded to input again. Now sleeps to the next refresh-interval boundary. Not Haiku-specific: the same gap is why these plug-ins are reported as needing DXVK on Linux, DXVK shipping its own DXGI with a real vblank wait. |
+| 10 | sechost: report no failure actions in `QueryServiceConfig2W` | local | `services.exe` keeps no failure actions, and `QueryServiceConfig2W` failed with `ERROR_INVALID_LEVEL` for them. WiX's ServiceConfig custom action (used by iLok's PACE License Support installer) reads them before setting them and aborts the whole install when the query fails. Now reports what Windows reports for a service with none: the structure, zeroed. Not Haiku-specific; carried from the user's ARM64 Wine build. |
+| 11 | msiexec, rundll32: declare Windows 10 compatibility in their manifests | local | Without a `supportedOS` list, Wine reports Windows 8 to the process an MSI custom action runs in, as Windows does. Installers that check for Windows 10 there (iLok's PACE License Support) refuse to install. Adds the same list Windows' own `msiexec.exe`/`rundll32.exe` carry. Not Haiku-specific; carried from the user's ARM64 Wine build. On Haiku these two only help 64-bit installers, since 32-bit Windows programs cannot run here. |
 
-Patch 8 removes the need for the `export WINELOADER=/boot/system/bin/wine` workaround earlier
+Patch 7 removes the need for the `export WINELOADER=/boot/system/bin/wine` workaround earlier
 Haiku Wine builds required in `~/config/settings/profile`: winegcc's generated `.exe` wrapper
 scripts fall back to invoking a bare `wine`, which now works from any directory.
 
-### Dropping the debug patch
+### Dropped in the 11.19 rebase
 
-Patch 11 writes to stdout on every fault. To build without it, delete the last patch from
-`patches/wine-11.8.patchset` (everything from its `From <sha>` line to end of file) and bump
-`REVISION`. Nothing else references it.
+- **Define `get_current_thread_data`** (Peppersawce) — upstream Wine made the function
+  unconditional in wine-11.11, so the patch has nothing left to do.
+- **ntdll: debug — name the faulting caller by scanning the stack** — development
+  instrumentation from the 11.8 GL work, never a fix. It printed to stdout on every fault.
 
-### Status of the OSMesa backend (patch 9)
+### Status of the OSMesa backend (patch 8)
 
-**Confirmed working for the case it was written for.** Patch 9 is what makes Direct3D-drawn
-plug-in editors render at all: without it the Nembrini Audio VST3 editors did not display,
-with it they do. Rendering has held since REVISION 6; since REVISION 8, which adds patch 10,
-those editors are also interactive.
+**On Wine 11.19 this backend has not run yet.** Wine 11.19 changed the GL driver interface
+(version 37 to 41): contexts are now created and owned by the driver, win32u creates the
+window's client surface itself, and drivers must supply a null surface for internal contexts
+and a thread-cleanup hook. Patch 8 was ported to that interface and compiles against the 11.19
+headers, but every gate below must be re-run on an 11.19 build before it is called working.
+The port also fixes a known 11.8 bug: resizing a window used to reallocate the render buffer
+in place while an OSMesa context was still bound to it.
 
-Against the five gates in [docs/OSMESA-GL-PLAN.md](docs/OSMESA-GL-PLAN.md) §5:
+On Wine 11.8 it was confirmed working for the case it was written for: without it the
+Nembrini Audio VST3 editors did not display, with it they did. Rendering held from 11.8
+REVISION 6; from REVISION 8, which added the dxgi patch, those editors were also interactive.
+
+Against the five gates in [docs/OSMESA-GL-PLAN.md](docs/OSMESA-GL-PLAN.md) §5, **as last
+measured on Wine 11.8**:
 
 | Gate | Status |
 |---|---|
@@ -82,11 +91,10 @@ Against the five gates in [docs/OSMESA-GL-PLAN.md](docs/OSMESA-GL-PLAN.md) §5:
 Gate 2 is the only one never exercised on its own, so a regression in the raw WGL path would
 first surface as a failure in one of the gates below it rather than as a clear GL error.
 
-Patch 11, the debug stack scanner, dates from debugging this WGL path and is not part of the
-fix. The verified groundwork, and why the alternatives (DXVK/Vulkan WSI, porting Mesa's
+The verified groundwork, and why the alternatives (DXVK/Vulkan WSI, porting Mesa's
 Wayland-EGL platform) are dead ends on Haiku, is all in that document.
 
-Patch 9 is gated at build time on `HAVE_OSMESA`, which `configure` derives from `GL/osmesa.h`
+Patch 8 is gated at build time on `HAVE_OSMESA`, which `configure` derives from `GL/osmesa.h`
 plus `libOSMesa`. **If those are missing the port still builds — silently, without software
 GL**, falling back to the EGL path that cannot work on Haiku. The recipe now declares
 `devel:libOSMesa` and `lib:libOSMesa` so this cannot happen by accident; it did not before
@@ -109,12 +117,12 @@ cp -a app-emulation/wine/. ~/haikuports/app-emulation/wine/
 
 # 2. Build (roughly an hour; builds both i386 and x86_64)
 cd ~/haikuports
-haikuporter -y -j8 wine-11.8
+haikuporter -y -j8 wine-11.19
 ```
 
-The package lands in `~/haikuports/packages/wine-11.8-10-x86_64.hpkg`.
+The package lands in `~/haikuports/packages/wine-11.19-1-x86_64.hpkg`.
 
-> **Always `haikuporter -y -c wine-11.8` first when `REVISION` changed.** Not just when the
+> **Always `haikuporter -y -c wine-11.19` first when `REVISION` changed.** Not just when the
 > patchset changed — **the revision is compiled into the binaries.** `configure` records
 > `prefix = /packages/wine-<version>-<revision>/.self`, and Wine bakes that into `bindir`/
 > `libdir`; the loader then resolves `ntdll.so` through it. Skipping `-c` after only a recipe
@@ -148,9 +156,9 @@ llvm21 + clang + lld for the PE cross-build; `haikuporter` will tell you what is
 A clean rebuild is ~55 minutes, which is not a per-edit cycle. Two things make a fast loop
 possible:
 
-- `haikuporter` applies `.patchset` files **with git**, so `work-11.8/sources/wine-wine-11.8`
+- `haikuporter` applies `.patchset` files **with git**, so `work-11.19/sources/wine-wine-11.19`
   is a git repo whose `HEAD` is the pristine tarball plus these patches. Editing it and
-  rebuilding one target inside the chroot (`haikuporter -E wine-11.8`, then
+  rebuilding one target inside the chroot (`haikuporter -E wine-11.19`, then
   `make -j8 dlls/dxgi/dxgi.dll`) takes minutes, and `git diff` there is exactly your change.
 - Nothing needs to be installed to test it. Wine sets its internal `build_dir` when its
   `ntdll.so` sits under `<tree>/dlls/ntdll`, and then omits the installed `/boot/system/lib/wine`
@@ -163,7 +171,7 @@ possible:
   (`WINEDLLPATH` does *not* work for this: its entries are appended *after* the installed
   directory, so an installed builtin always wins.)
 
-> **The catch: `haikuporter -c` deletes `work-11.8/sources/` without warning.** An edit that
+> **The catch: `haikuporter -c` deletes `work-11.19/sources/` without warning.** An edit that
 > exists only there is one command from being lost — that has happened twice here. Replay every
 > such edit into the patchset (`git diff` in the work tree, apply it to the tree the patchset is
 > generated from) *before* any clean rebuild. Every source change ultimately belongs in the
@@ -172,12 +180,13 @@ possible:
 ### Installing
 
 ```sh
-pkgman install ./wine-11.8-10-x86_64.hpkg
+pkgman install ./wine-11.19-1-x86_64.hpkg
 ```
 
-- **x86_64**, and **Haiku hrev59867 or newer** (`requires: haiku>=r1~beta6_hrev59867-1`).
-  `haikuporter` bakes the build machine's revision in as a floor, so an older nightly refuses to
-  install it. Newer is fine — this is a userland package, not a kernel add-on.
+- **x86_64**, and **Haiku nightly hrev60236 or newer** (built on hrev60236).
+  `haikuporter` bakes the build machine's revision in as a floor, so an older nightly — and R1
+  beta stable — refuses to install it. Newer is fine — this is a userland package, not a kernel
+  add-on.
 - Runtime dependencies, all pulled from HaikuPorts automatically. If the target machine is
   offline, bring them along too.
 
@@ -220,13 +229,13 @@ produced:
 
 ```sh
 # One-time: reconstruct the working tree from this repo
-tar xf wine-11.8.tar.gz && cd wine-wine-11.8
-git init -q && git add -A && git commit -qm "wine-11.8 pristine"
-git am /path/to/haiku-wine-port/app-emulation/wine/patches/wine-11.8.patchset
+tar xf wine-wine-11.19.tar.gz && cd wine-wine-11.19
+git init -q && git add -A && git commit -qm "wine-11.19 pristine"
+git am /path/to/haiku-wine-port/app-emulation/wine/patches/wine-11.19.patchset
 
 # Then, for every change: edit, commit, regenerate, commit the patchset here
 git format-patch --stdout <pristine-sha>..HEAD \
-  > /path/to/haiku-wine-port/app-emulation/wine/patches/wine-11.8.patchset
+  > /path/to/haiku-wine-port/app-emulation/wine/patches/wine-11.19.patchset
 ```
 
 Each commit is one patch, in order. Bump `REVISION` in the recipe whenever the patchset or
@@ -236,7 +245,7 @@ To verify a regenerated patchset reproduces the tree it came from:
 
 ```sh
 git worktree add --detach /tmp/verify <pristine-sha>
-cd /tmp/verify && git am /path/to/patches/wine-11.8.patchset
+cd /tmp/verify && git am /path/to/patches/wine-11.19.patchset
 git rev-parse HEAD^{tree}   # must equal the dev tree's HEAD^{tree}
 ```
 
@@ -245,8 +254,9 @@ git rev-parse HEAD^{tree}   # must equal the dev tree's HEAD^{tree}
 | | Role |
 |---|---|
 | **this repo** | **Authoritative.** The recipe and patchsets, in git. If it is not committed here, it is not kept. |
-| `third_party/wine-osmesa-dev` | Scratch working tree for editing source and regenerating the patchset (the `git am` tree above). Regenerable; safe to delete and recreate. Tag `pre-consolidate-backup-20260726` marks the pre-cleanup history. |
-| haikulaptop `~/haikuports/app-emulation/wine/` | Build machine only. Copy the port in, build, copy the `.hpkg` out. Has no git history of its own — anything edited only there is one `haikuporter -c` from gone. |
+| `third_party/wine-haiku-dev` | Scratch working tree for editing source and regenerating the patchset (the `git am` tree above): pristine 11.19 plus one commit per patch. Regenerable; safe to delete and recreate. |
+| `third_party/wine-osmesa-dev` | The 11.8 tree the 11.19 rebase cherry-picked from. History only. Tag `pre-consolidate-backup-20260726` marks its pre-cleanup history. |
+| build VM `~/haikuports/app-emulation/wine/` | Build machine only (a QEMU VM running the nightly the package is built for). Copy the port in, build, copy the `.hpkg` out. Has no git history of its own — anything edited only there is one `haikuporter -c` from gone. |
 
 ## Graphics driver
 
@@ -265,7 +275,7 @@ wine reg add 'HKCU\Software\Wine\Drivers' /v Graphics /d null /f
 
 vstbridge logs a warning naming the current driver whenever it is not `null`.
 
-Note that patch 9's software GL lives in `winewayland.drv`, so it is only in play when that
+Note that patch 8's software GL lives in `winewayland.drv`, so it is only in play when that
 driver is selected — the `null` driver has no GL backend at all.
 
 ### How a Wayland window exists on Haiku at all
@@ -327,6 +337,14 @@ WINEDEBUG=+winediag wine notepad 2>&1 | head       # the ERR above, if any
 
 ## Revision history
 
+### wine-11.19
+
+| REVISION | Notes |
+|---|---|
+| 1 | Rebase onto Wine 11.19 (tarball SHA256 `73eb0b02…c4087f`). Eleven patches: the 11.8 set minus `get_current_thread_data` (upstreamed in 11.11) and the debug stack scan, plus two installer fixes for iLok/PACE (sechost failure actions, Windows 10 manifests for msiexec/rundll32). Patch 2 needed two conflict resolutions; the OSMesa backend (patch 8) was ported to the version-41 GL driver interface and compile-checked only. Dependency declarations unchanged from 11.8-10. **Built** on hrev60236 (2026-10-14), after one more patch 2 fix: 11.19 adds a static `spawn_thread()` to `dlls/ntdll/unix/thread.c` that clashes with Haiku's `OS.h`, so it is renamed around that include like `cpu_info` and `exit_thread`. Confirmed in the build: `HAVE_OSMESA 1` in the work tree's `config.h`; the package requires `haiku>=r1~beta6_hrev60236-1` and `lib:libosmesa`; `bin/wine` carries `/packages/wine-11.19-1/.self`. In 11.19, `bin/wine` is a small launcher (`tools/wine`), and the loader that patch 7 changes is `lib/wine/x86_64-unix/Wine`, which imports `find_path`. **Not yet run on a test machine.** |
+
+### wine-11.8
+
 | REVISION | Notes |
 |---|---|
 | 10 | **The Wayland dependency fix, rebuilt cleanly.** Same recipe content as 9 apart from the revision; the patchset is still byte-identical to REVISION 8. Exists only because 9 was built without `haikuporter -c` and shipped binaries carrying REVISION 8's package path — a revision cannot be reissued once installed anywhere, since `pkgman` keys upgrades off version-revision and would see a same-named package as nothing new. Before shipping, confirm `strings -a /boot/system/bin/wine \| grep packages/wine` reports `wine-11.8-10`. |
@@ -346,6 +364,6 @@ WINEDEBUG=+winediag wine notepad 2>&1 | head       # the ERR above, if any
 
 ## Licensing and credit
 
-Wine is **LGPL v2.1**; these patches are derived work under the same licence. Patches 1–5 are
+Wine is **LGPL v2.1**; these patches are derived work under the same licence. Patches 1–4 are
 upstream HaikuPorts' work (including X512's Haiku port) with authorship preserved in each
 `From:` line. The recipe is derived from the haikuports `app-emulation/wine` recipe.
