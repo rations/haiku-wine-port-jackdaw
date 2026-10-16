@@ -1,5 +1,8 @@
 # haiku-wine-port
 
+> **Users:** install the whole stack from the [JackDAW release](https://github.com/rations/jackDAW-haiku/releases)
+> (`sh install.sh`). This repository is the source of the `wine` package.
+
 Haiku patches for **Wine 11.19**, packaged as a HaikuPorts port. They exist so that
 [vstbridge-haiku](https://github.com/rations/vstbridge-haiku) can run **Windows VST2 and VST3
 plug-ins** inside [jackDAW-haiku](https://github.com/rations/jackDAW-haiku) — the stock
@@ -189,10 +192,11 @@ possible:
 pkgman install ./wine-11.19-4-x86_64.hpkg
 ```
 
-- **x86_64**, and **Haiku nightly hrev60247 or newer** (REVISION 3 is built on hrev60247).
+- **x86_64**, and **Haiku nightly hrev60256 or newer** (REVISION 4 is built on hrev60256).
   `haikuporter` bakes the build machine's revision in as a floor, so an older nightly — and R1
   beta stable — refuses to install it. Newer is fine — this is a userland package, not a kernel
-  add-on.
+  add-on. The floor includes the package revision too, so build on the official `-1` system
+  package: built on the JackDAW stack's `-2` system package, Wine refuses a stock system.
 - Runtime dependencies, all pulled from HaikuPorts automatically. If the target machine is
   offline, bring them along too.
 
@@ -347,7 +351,7 @@ WINEDEBUG=+winediag wine notepad 2>&1 | head       # the ERR above, if any
 
 | REVISION | Notes |
 |---|---|
-| 4 | Patch 17 (hardware breakpoints, for PACE/iLok copy protection), and `lib:libgnutls` in REQUIRES: Wine dlopens it, so haikuporter could not see the dependency, and without it TLS (and iLok sign-in) failed. Patch 17 was verified from the work tree on hrev60247: the Windows breakpoint tests pass, and the Fortin NTS and Archetype Gojira X VST3s load licensed in JackDAW. The patchset applies to pristine 11.19 and gives tree `26fbb2d8`. **Not yet built as a package.** |
+| 4 | Patch 17 (hardware breakpoints, for PACE/iLok copy protection), and `lib:libgnutls` in REQUIRES: Wine dlopens it, so haikuporter could not see the dependency, and without it TLS (and iLok sign-in) failed. Patch 17 was verified from the work tree on hrev60247: the Windows breakpoint tests pass, and the Fortin NTS and Archetype Gojira X VST3s load licensed in JackDAW. The patchset applies to pristine 11.19 and gives tree `26fbb2d8`. **Built** 2026-10-16 with `haikuporter -c` on stock hrev60256-1: all 17 patches applied from the committed patchset; the package requires `haiku>=r1~beta6_hrev60256-1` and `lib:libgnutls`. **Verified installed** (VM, JackDAW stack 0.5 installer on the hrev60256-2 system package): a 32-bit `syswow64\cmd.exe` reports `x86`, Wine Mono installs, and the hardware breakpoint test passes. **Not yet run on the test machine.** |
 | 3 | Patches 13–16: thread-directed signals, no `-ldl` in winegcc, WoW64 (32-bit code) on a kernel with LDT support, xattrs through libgnu. Built on hrev60247, so it requires `haiku>=r1~beta6_hrev60247-1`. Verified with the work tree before packaging (VM, custom hrev60247 kernel): a 32-bit `syswow64\cmd.exe` runs and reports `x86`; Wine Mono 11.3.0 installs; iLok's PACE License Support bundle installs (exit `0x0`) and iLok License Manager starts. **Built** 2026-10-15 with `haikuporter -c`: the work tree's `HEAD^{tree}` equals the verified patchset's (`3035eeed`); `config.h` has `HAVE_SYS_XATTR_H 1` and the Makefile `XATTR_LIBS = -lgnu`; `ntdll.so` and `wineserver` link `libgnu.so`; `bin/wine` carries `/packages/wine-11.19-3`; the package requires `haiku>=r1~beta6_hrev60247-1`. **Not yet run as an installed package or on the test machine.** |
 | 2 | Patch 12 (wineserver `free_async_queue()` double release). Built on hrev60236. |
 | 1 | Rebase onto Wine 11.19 (tarball SHA256 `73eb0b02…c4087f`). Eleven patches: the 11.8 set minus `get_current_thread_data` (upstreamed in 11.11) and the debug stack scan, plus two installer fixes for iLok/PACE (sechost failure actions, Windows 10 manifests for msiexec/rundll32). Patch 2 needed two conflict resolutions; the OSMesa backend (patch 8) was ported to the version-41 GL driver interface and compile-checked only. Dependency declarations unchanged from 11.8-10. **Built** on hrev60236 (2026-10-14), after one more patch 2 fix: 11.19 adds a static `spawn_thread()` to `dlls/ntdll/unix/thread.c` that clashes with Haiku's `OS.h`, so it is renamed around that include like `cpu_info` and `exit_thread`. Confirmed in the build: `HAVE_OSMESA 1` in the work tree's `config.h`; the package requires `haiku>=r1~beta6_hrev60236-1` and `lib:libosmesa`; `bin/wine` carries `/packages/wine-11.19-1/.self`. In 11.19, `bin/wine` is a small launcher (`tools/wine`), and the loader that patch 7 changes is `lib/wine/x86_64-unix/Wine`, which imports `find_path`. **Not yet run on a test machine.** |
