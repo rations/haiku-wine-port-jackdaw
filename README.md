@@ -17,9 +17,9 @@ downloads the upstream tarball (checksum pinned in the recipe) and applies the p
 
 ```
 app-emulation/wine/            drop-in replacement for the haikuports port directory
-  wine-11.19.recipe            REVISION=1
+  wine-11.19.recipe            REVISION=3
   patches/
-    wine-11.19.patchset        the 11 patches below (this is the deliverable)
+    wine-11.19.patchset        the 16 patches below (this is the deliverable)
     wine-11.8-home.patchset    optional, not applied by the recipe (see Optional patches)
   additional-files/
     wine.rdef.in               Deskbar icon/version resource template
@@ -34,8 +34,8 @@ attic/                         kept for reference, not built
 
 ## The patchset
 
-Eleven patches. **1–4 are upstream HaikuPorts'**, with original authorship preserved in each
-`From:` line. **5–11 are local.**
+Sixteen patches. **1–4 are upstream HaikuPorts'**, with original authorship preserved in each
+`From:` line. **5–16 are local.**
 
 | # | Patch | Author | Why |
 |---|---|---|---|
@@ -49,7 +49,12 @@ Eleven patches. **1–4 are upstream HaikuPorts'**, with original authorship pre
 | 8 | winewayland: add OSMesa software OpenGL backend for Haiku | local | Gives Wine a software GL backend (OSMesa/llvmpipe) so wined3d can create a device and D3D-drawn plug-in editors can render — **without it those editors do not display at all**. Haiku's Mesa has no DRI swrast and no Wayland EGL platform, so `winewayland.drv`'s existing EGL path can never initialize there. Ported to Wine 11.19's GL driver interface; see the status below. |
 | 9 | dxgi: wait for a refresh interval in `IDXGIOutput::WaitForVBlank()` | local | `WaitForVBlank()` was a stub printing a FIXME and returning `E_NOTIMPL` immediately. JUCE 8's Direct2D renderer drives all repainting from a dedicated thread that calls it in a loop, so with no wait that thread spun — measured at 62,024 calls in ~25 s, saturating a core — and the editor rendered one frame then never responded to input again. Now sleeps to the next refresh-interval boundary. Not Haiku-specific: the same gap is why these plug-ins are reported as needing DXVK on Linux, DXVK shipping its own DXGI with a real vblank wait. |
 | 10 | sechost: report no failure actions in `QueryServiceConfig2W` | local | `services.exe` keeps no failure actions, and `QueryServiceConfig2W` failed with `ERROR_INVALID_LEVEL` for them. WiX's ServiceConfig custom action (used by iLok's PACE License Support installer) reads them before setting them and aborts the whole install when the query fails. Now reports what Windows reports for a service with none: the structure, zeroed. Not Haiku-specific; carried from the user's ARM64 Wine build. |
-| 11 | msiexec, rundll32: declare Windows 10 compatibility in their manifests | local | Without a `supportedOS` list, Wine reports Windows 8 to the process an MSI custom action runs in, as Windows does. Installers that check for Windows 10 there (iLok's PACE License Support) refuse to install. Adds the same list Windows' own `msiexec.exe`/`rundll32.exe` carry. Not Haiku-specific; carried from the user's ARM64 Wine build. On Haiku these two only help 64-bit installers, since 32-bit Windows programs cannot run here. |
+| 11 | msiexec, rundll32: declare Windows 10 compatibility in their manifests | local | Without a `supportedOS` list, Wine reports Windows 8 to the process an MSI custom action runs in, as Windows does. Installers that check for Windows 10 there (iLok's PACE License Support) refuse to install. Adds the same list Windows' own `msiexec.exe`/`rundll32.exe` carry. Not Haiku-specific; carried from the user's ARM64 Wine build. On a stock Haiku kernel these two only help 64-bit installers, since 32-bit Windows programs need patch 15 and a kernel with LDT support. |
+| 12 | server: detach asyncs from a queue before terminating them in `free_async_queue()` | local | wineserver aborted (`release_object: obj->refcount`) every time a prefix shut down, so registry changes since the last 30-second periodic save were lost — `wine regedit file.reg` never persisted, which broke licences kept in the registry (MachineGuid, per-plugin IDs) — and each crash orphaned the prefix's `services.exe`. When an APC cannot be delivered, `async_terminate()` completes the async through `async_set_result()`, which unlinked it and dropped the queue's reference while `free_async_queue()` still held it, and `free_async_queue()` then dropped it again. On Haiku delivery always fails for a thread not already waiting, because the client reports no Unix thread id (`get_unix_tid()` returns -1) and wineserver cannot signal it; `services.exe` closing its listening `svcctl` pipe at shutdown hits this every time. Not Haiku-specific in itself. |
+| 13 | ntdll, server: deliver signals to specific threads on Haiku | local | `get_unix_tid()` had no Haiku branch and returned -1, so wineserver could never signal one thread: an APC queued to a thread that was not already waiting was destroyed and the pending I/O completed with `STATUS_ALERTED`. Named-pipe readers saw `ERROR_ALERTED` — WiX Burn's engine and UI lost their pipe (`0x800702e3`). Reports `find_thread(NULL)` and signals with `send_signal()`. Also removes the trigger of patch 12's crash. |
+| 14 | winegcc: do not link with `-ldl` on Haiku | local | Haiku has no `libdl` (`dlopen` is in libroot), so every Winelib link failed unless a hand-made empty `libdl.a` stub was installed. |
+| 15 | ntdll: support WoW64 (32-bit code) on Haiku | local | 32-bit Windows code needs a 32-bit code selector and a per-thread `%fs` segment for its TEB; every 32-bit program exited with "No LDT support on this platform". Uses new `arch_thread_control()` calls (`THREAD_SET_LDT_ENTRY`, `THREAD_SET/GET_FS_BASE`, `THREAD_GET_GS_BASE`) that **only a locally built Haiku kernel provides** (per-team LDT, FS/DS/ES kept per thread, FS saved across signals); FreeBSD's model. On a stock kernel 32-bit programs exit with "No LDT support in this Haiku kernel" and 64-bit ones are unaffected. Enables the iLok PACE installer's 32-bit parts (Bonjour, custom actions) and 32-bit installers in general. |
+| 16 | ntdll, server: use the xattr functions from libgnu on Haiku | local | Patch 2 disabled `HAVE_SYS_XATTR_H`, so reparse points (Windows symbolic links) failed with `ENOSYS`. Wine Mono's installer creates symlinks (`CREATELINKS64`, error 1603), so Mono never installed and every .NET custom action failed — iLok's License Support MSI with `0x80070643`. configure now finds `fgetxattr` in libgnu, which maps xattrs to BFS attributes. |
 
 Patch 7 removes the need for the `export WINELOADER=/boot/system/bin/wine` workaround earlier
 Haiku Wine builds required in `~/config/settings/profile`: winegcc's generated `.exe` wrapper
@@ -180,10 +185,10 @@ possible:
 ### Installing
 
 ```sh
-pkgman install ./wine-11.19-1-x86_64.hpkg
+pkgman install ./wine-11.19-3-x86_64.hpkg
 ```
 
-- **x86_64**, and **Haiku nightly hrev60236 or newer** (built on hrev60236).
+- **x86_64**, and **Haiku nightly hrev60247 or newer** (REVISION 3 is built on hrev60247).
   `haikuporter` bakes the build machine's revision in as a floor, so an older nightly — and R1
   beta stable — refuses to install it. Newer is fine — this is a userland package, not a kernel
   add-on.
@@ -341,6 +346,8 @@ WINEDEBUG=+winediag wine notepad 2>&1 | head       # the ERR above, if any
 
 | REVISION | Notes |
 |---|---|
+| 3 | Patches 13–16: thread-directed signals, no `-ldl` in winegcc, WoW64 (32-bit code) on a kernel with LDT support, xattrs through libgnu. Built on hrev60247, so it requires `haiku>=r1~beta6_hrev60247-1`. Verified with the work tree before packaging (VM, custom hrev60247 kernel): a 32-bit `syswow64\cmd.exe` runs and reports `x86`; Wine Mono 11.3.0 installs; iLok's PACE License Support bundle installs (exit `0x0`) and iLok License Manager starts. **Built** 2026-10-15 with `haikuporter -c`: the work tree's `HEAD^{tree}` equals the verified patchset's (`3035eeed`); `config.h` has `HAVE_SYS_XATTR_H 1` and the Makefile `XATTR_LIBS = -lgnu`; `ntdll.so` and `wineserver` link `libgnu.so`; `bin/wine` carries `/packages/wine-11.19-3`; the package requires `haiku>=r1~beta6_hrev60247-1`. **Not yet run as an installed package or on the test machine.** |
+| 2 | Patch 12 (wineserver `free_async_queue()` double release). Built on hrev60236. |
 | 1 | Rebase onto Wine 11.19 (tarball SHA256 `73eb0b02…c4087f`). Eleven patches: the 11.8 set minus `get_current_thread_data` (upstreamed in 11.11) and the debug stack scan, plus two installer fixes for iLok/PACE (sechost failure actions, Windows 10 manifests for msiexec/rundll32). Patch 2 needed two conflict resolutions; the OSMesa backend (patch 8) was ported to the version-41 GL driver interface and compile-checked only. Dependency declarations unchanged from 11.8-10. **Built** on hrev60236 (2026-10-14), after one more patch 2 fix: 11.19 adds a static `spawn_thread()` to `dlls/ntdll/unix/thread.c` that clashes with Haiku's `OS.h`, so it is renamed around that include like `cpu_info` and `exit_thread`. Confirmed in the build: `HAVE_OSMESA 1` in the work tree's `config.h`; the package requires `haiku>=r1~beta6_hrev60236-1` and `lib:libosmesa`; `bin/wine` carries `/packages/wine-11.19-1/.self`. In 11.19, `bin/wine` is a small launcher (`tools/wine`), and the loader that patch 7 changes is `lib/wine/x86_64-unix/Wine`, which imports `find_path`. **Not yet run on a test machine.** |
 
 ### wine-11.8

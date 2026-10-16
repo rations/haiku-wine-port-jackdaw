@@ -1,7 +1,7 @@
 From f1ae6aa31e602ac1b357b9f7f400258367d26d1f Mon Sep 17 00:00:00 2001
 From: X512 <danger_mail@list.ru>
 Date: Thu, 23 Apr 2026 02:37:32 +0200
-Subject: [PATCH 01/11] Add Wayland input header
+Subject: [PATCH 01/16] Add Wayland input header
 
 ---
  dlls/winewayland.drv/input-event-codes.h | 980 +++++++++++++++++++++++
@@ -1001,7 +1001,7 @@ index 00000000..a4206723
 From 6f1edabb0f0a5ba40feeb0f5652ca46699d33e24 Mon Sep 17 00:00:00 2001
 From: X512 <danger_mail@list.ru>
 Date: Sun, 3 May 2026 11:49:20 +0200
-Subject: [PATCH 02/11] 11.8 patches
+Subject: [PATCH 02/16] 11.8 patches
 
 [rations: rebased onto wine-11.19. system.c: kept upstream's new <assert.h> include alongside the Haiku OS.h block. signal_x86_64.c: dropped the comment-only //#ifndef/#endif pair around usr1_handler, which upstream rewrote (new !data->teb branch); no functional change. thread.c: also renamed spawn_thread around the OS.h include, since 11.19 adds a static spawn_thread() that clashes with Haiku's.]
 ---
@@ -1927,7 +1927,7 @@ index e92397eb..75129b66 100644
 From 73178b9128cdc18ca1e8c80834be4a1c4034cf48 Mon Sep 17 00:00:00 2001
 From: Peppersawce <michaelpeppers89@yahoo.it>
 Date: Fri, 24 Apr 2026 15:59:56 +0200
-Subject: [PATCH 03/11] Disable Bluetooth on Beta 5
+Subject: [PATCH 03/16] Disable Bluetooth on Beta 5
 
 ---
  server/sock.c | 4 ++++
@@ -1955,7 +1955,7 @@ index 837ae2f2..722b4abb 100644
 From 5446418205ffcb48c2076981e0990fe57c7745b7 Mon Sep 17 00:00:00 2001
 From: Ken Mays <kmays2000@gmail.com>
 Date: Sat, 25 Apr 2026 13:40:26 +0200
-Subject: [PATCH 04/11] Opensound support
+Subject: [PATCH 04/16] Opensound support
 
 ---
  configure.ac               | 6 +++---
@@ -2024,7 +2024,7 @@ index f5844912..1aee2585 100644
 From a00e31e6af0880333e69a17739eb15e24a170d89 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Sun, 19 Jul 2026 22:04:22 +1000
-Subject: [PATCH 05/11] Run static initializers in Winelib modules on Haiku
+Subject: [PATCH 05/16] Run static initializers in Winelib modules on Haiku
 
 Haikus libroot has neither dladdr1() nor dlinfo(), so __wine_init_so_dll()
 compiled to an empty function and no static constructor in any Winelib module
@@ -2141,7 +2141,7 @@ index 88d00d1f..f4ab87b1 100644
 From fcc0c63c656ab6be540025fb5339cc4c11f41310 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Mon, 20 Jul 2026 00:23:17 +1000
-Subject: [PATCH 06/11] Do not block in the SIGSEGV handler on Haiku
+Subject: [PATCH 06/16] Do not block in the SIGSEGV handler on Haiku
 
 The Haiku port left an interactive debug hook in segv_handler: after
 printing the fault it called fgetc(stdin) and waited for a keypress, with
@@ -2188,7 +2188,7 @@ index b022ec70..af4d8024 100644
 From 1a0088de0f925cc344bce03290b211cd4a2cae94 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Mon, 20 Jul 2026 17:47:27 +1000
-Subject: [PATCH 07/11] loader: find the loader path via find_path() on Haiku
+Subject: [PATCH 07/16] loader: find the loader path via find_path() on Haiku
 
 Haiku has no /proc, so get_self_exe() returned NULL and the loader fell
 back to resolving argv[0]. That works for any invocation carrying a
@@ -2237,7 +2237,7 @@ index 71ba308c..e959a762 100644
 From f209fb6cc04d5ee35536c4d154cc166c7f8555c5 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Fri, 24 Jul 2026 16:53:02 +1000
-Subject: [PATCH 08/11] winewayland: add OSMesa software OpenGL backend for
+Subject: [PATCH 08/16] winewayland: add OSMesa software OpenGL backend for
  Haiku
 
 Haiku's Mesa has no DRI swrast and no Wayland EGL platform, so the EGL path
@@ -3020,7 +3020,7 @@ index 00000000..74dd38f7
 From cf95cc40bf10ecc94aaba233074015bf7c16508c Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Mon, 27 Jul 2026 01:36:07 +1000
-Subject: [PATCH 09/11] dxgi: Wait for a refresh interval in
+Subject: [PATCH 09/16] dxgi: Wait for a refresh interval in
  IDXGIOutput::WaitForVBlank().
 
 WaitForVBlank() printed a FIXME and returned E_NOTIMPL immediately,
@@ -3103,7 +3103,7 @@ index e828ed0d..9690dee6 100644
 From 488d7fd44e16339c4aecc1357fa766a1fe1e013d Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Wed, 7 Oct 2026 12:34:24 +1000
-Subject: [PATCH 10/11] sechost: Report no failure actions in
+Subject: [PATCH 10/16] sechost: Report no failure actions in
  QueryServiceConfig2W.
 
 services.exe doesn't keep a service's failure actions: ChangeServiceConfig2W accepts them with a
@@ -3168,7 +3168,7 @@ index f05fd2d7..20a7fb17 100644
 From e18ed04994c89eadefb6b93d855e5d9dccf6212f Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Wed, 7 Oct 2026 12:34:45 +1000
-Subject: [PATCH 11/11] msiexec, rundll32: Declare Windows 10 compatibility in
+Subject: [PATCH 11/16] msiexec, rundll32: Declare Windows 10 compatibility in
  their manifests.
 
 Windows 8.1 and later report Windows 8 (6.2) to a program whose manifest doesn't list the newer
@@ -3272,6 +3272,606 @@ index 00000000..07b215a1
 +    </application>
 +</compatibility>
 +</assembly>
+-- 
+2.47.3
+
+
+From 4c2b9640042b3331a1029b8c9f46007f949435f1 Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
+Date: Thu, 15 Oct 2026 10:50:10 +1000
+Subject: [PATCH 12/16] server: Detach asyncs from a queue before terminating
+ them in free_async_queue().
+
+free_async_queue() terminated each async while it was still linked into
+the queue, and only then cleared async->queue and dropped the queue's
+reference. async_terminate() queues an APC_ASYNC_IO to the async's
+thread; when that APC cannot be queued, queue_apc() fails, the APC is
+released unexecuted, and thread_apc_destroy() completes the async through
+async_set_result(). That function still saw async->queue set, so it
+unlinked the async and released the queue's reference itself. Back in
+free_async_queue() the same reference was released again: refcount
+underflow, and wineserver aborts in release_object() on
+"assert( obj->refcount )".
+
+On Haiku the APC can never be delivered by signal: the client does not
+report a Unix thread id (get_unix_tid() has no Haiku branch and returns
+-1), so send_thread_signal() always fails and any thread not already in
+an APC wait cannot be reached. services.exe hits this on every shutdown:
+its svcctl listener thread has a pending FSCTL_PIPE_LISTEN when it
+flushes and closes the pipe, pipe_server_destroy() frees the listen
+queue, and wineserver aborts. Traced with "wineserver -f -d2" and a
+debug_server report: close_handle -> release_object(pipe_server) ->
+pipe_server_destroy -> free_async_queue -> release_object(async) with
+refcount already 0. On Linux the same sequence delivers the APC with
+SIGUSR1 and completes normally.
+
+Because wineserver dies before its shutdown timer runs flush_registry(),
+every registry change made since the last 30-second periodic save is
+lost. "wine regedit file.reg" never persisted, which broke licence data
+that lives in the registry (MachineGuid, per-plugin UUIDs), and each
+crash orphaned the prefix's services.exe processes.
+
+Clearing async->queue before async_terminate() makes async_set_result()
+leave the list and the reference alone; free_async_queue() then drops
+the queue's reference exactly once, as it did before when the APC was
+delivered. The list itself is being torn down, so the entry needs no
+unlinking. Not Haiku-specific; any failed APC delivery hits it. The
+underlying Haiku limitation (no per-thread signals from wineserver) is
+left as is.
+---
+ server/async.c | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/server/async.c b/server/async.c
+index ae51b2f7..691b7984 100644
+--- a/server/async.c
++++ b/server/async.c
+@@ -277,8 +277,11 @@ void free_async_queue( struct async_queue *queue )
+     {
+         if (!async->completion) async->completion = fd_get_completion( async->fd, &async->comp_key );
+         async->fd = NULL;
+-        async_terminate( async, STATUS_HANDLES_CLOSED );
++        /* detach before terminating: if no APC can be queued, async_terminate()
++         * completes the async through async_set_result(), which would otherwise
++         * remove it from this queue and drop the queue's reference a second time */
+         async->queue = NULL;
++        async_terminate( async, STATUS_HANDLES_CLOSED );
+         release_object( &async->obj );
+     }
+ }
+-- 
+2.47.3
+
+
+From e0caeb27c2f4c965b201865974f98999e31b5d03 Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
+Date: Thu, 15 Oct 2026 13:03:38 +1000
+Subject: [PATCH 13/16] ntdll, server: Deliver signals to specific threads on
+ Haiku.
+
+get_unix_tid() had no Haiku branch and returned -1, so the server could
+never signal a single thread: queuing an APC to a thread that was not
+waiting failed, the APC was destroyed, and the pending I/O completed with
+STATUS_ALERTED. Named-pipe readers then saw ERROR_ALERTED (seen as WiX
+Burn's engine and UI losing their pipe connection).
+
+Haiku thread ids are system-wide, so report find_thread(NULL) and send
+the signal with send_signal(), which returns a status instead of setting
+errno.
+---
+ dlls/ntdll/unix/server.c |  3 +++
+ server/ptrace.c          | 17 +++++++++++++++++
+ 2 files changed, 20 insertions(+)
+
+diff --git a/dlls/ntdll/unix/server.c b/dlls/ntdll/unix/server.c
+index d626ad11..cc7a52aa 100644
+--- a/dlls/ntdll/unix/server.c
++++ b/dlls/ntdll/unix/server.c
+@@ -71,6 +71,7 @@
+ #endif
+ #endif
+ #ifdef __HAIKU__
++#include <OS.h>
+ #define SIGIO SIGPOLL
+ #endif
+ 
+@@ -1549,6 +1550,8 @@ static int get_unix_tid(void)
+     ret = lwpid;
+ #elif defined(__DragonFly__)
+     ret = lwp_gettid();
++#elif defined(__HAIKU__)
++    ret = find_thread( NULL );
+ #endif
+     return ret;
+ }
+diff --git a/server/ptrace.c b/server/ptrace.c
+index 2e6d93b7..bda79d71 100644
+--- a/server/ptrace.c
++++ b/server/ptrace.c
+@@ -47,6 +47,17 @@
+ # include <sys/uio.h>
+ #endif
+ #include <unistd.h>
++#ifdef __HAIKU__
++#define kill_thread haiku_kill_thread
++#define resume_thread haiku_resume_thread
++#define set_thread_priority haiku_set_thread_priority
++#define suspend_thread haiku_suspend_thread
++#include <OS.h>
++#undef kill_thread
++#undef resume_thread
++#undef set_thread_priority
++#undef suspend_thread
++#endif
+ 
+ #include "ntstatus.h"
+ #include "winternl.h"
+@@ -226,6 +237,12 @@ static inline int tkill( int tgid, int pid, int sig )
+     return ret;
+ #elif (defined(__FreeBSD__) || defined (__FreeBSD_kernel__)) && defined(HAVE_THR_KILL2)
+     return thr_kill2( tgid, pid, sig );
++#elif defined(__HAIKU__)
++    /* thread ids are system-wide; send_signal() returns a status, not -1 and errno */
++    status_t ret = send_signal( pid, sig );
++    if (ret == B_OK) return 0;
++    errno = (ret == B_BAD_THREAD_ID) ? ESRCH : ret;
++    return -1;
+ #else
+     errno = ENOSYS;
+     return -1;
+-- 
+2.47.3
+
+
+From b678548c02747797e32b6de61f2286d4fa679362 Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
+Date: Thu, 15 Oct 2026 13:12:19 +1000
+Subject: [PATCH 14/16] winegcc: Do not link with -ldl on Haiku.
+
+Haiku provides dlopen() and friends in libroot and ships no libdl, so
+every Winelib link failed unless an empty libdl.a was put in place by
+hand.
+---
+ tools/winegcc/winegcc.c | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/tools/winegcc/winegcc.c b/tools/winegcc/winegcc.c
+index 75129b66..07d4fb6e 100644
+--- a/tools/winegcc/winegcc.c
++++ b/tools/winegcc/winegcc.c
+@@ -1404,7 +1404,10 @@ static void build(struct strarray input_files, const char *output)
+ 
+     if (!nostdlib && !is_pe)
+     {
++#ifndef __HAIKU__
++	/* Haiku has the dl functions in libroot and no libdl */
+ 	strarray_add(&link_args, "-ldl");
++#endif
+ 	strarray_add(&link_args, "-lm");
+ 	strarray_add(&link_args, "-lc");
+ #ifdef __HAIKU__
+-- 
+2.47.3
+
+
+From 55f6487b56b1f22f3f2e3788df756a1fdbc4545b Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
+Date: Thu, 15 Oct 2026 14:00:46 +1000
+Subject: [PATCH 15/16] ntdll: Support WoW64 (32-bit code) on Haiku.
+
+32-bit Windows code needs a 32-bit code selector and a per-thread %fs
+segment whose base is the 32-bit TEB. Stock Haiku has neither an LDT nor
+a way to keep a 32-bit FS across context switches and signals, so every
+32-bit PE exited with "No LDT support on this platform".
+
+This needs a Haiku kernel with per-team LDT support, which adds these
+arch_thread_control() calls next to THREAD_SET_GS_BASE:
+THREAD_SET_LDT_ENTRY, THREAD_SET_FS_BASE, THREAD_GET_FS_BASE and
+THREAD_GET_GS_BASE. The constants get fallback definitions here because
+the stock headers lack them. On a stock kernel the call fails with
+B_BAD_HANDLER and 32-bit processes exit with a clear message; 64-bit
+code is unaffected.
+
+The model is FreeBSD's: cs32_sel is the GDT USER32_CODE_SELECTOR (0x1b),
+fs32_sel stays 0 so each thread allocates an LDT entry, and the kernel
+saves the FS selector in fpu_state (offset 486) on signal delivery.
+- The context macros read CS, SS and FS from the signal context instead
+  of constants, and the segment save/restore that was compiled out on
+  Haiku is enabled again. restore_context only accepts cs32_sel or
+  cs64_sel.
+- The syscall dispatchers restore the 64-bit FS base on entry through a
+  C helper (Haiku syscall numbers are not stable, so no raw syscall),
+  and reload the 32-bit FS selector and SS on return, as on Linux and
+  FreeBSD.
+- The %gs fault fixup uses THREAD_GET/SET_GS_BASE.
+- system.c reports no FSGSBASE: the kernel keeps CR4.FSGSBASE off.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ dlls/ntdll/unix/signal_x86_64.c | 123 +++++++++++++++++++++++++++-----
+ dlls/ntdll/unix/system.c        |   2 +
+ 2 files changed, 107 insertions(+), 18 deletions(-)
+
+diff --git a/dlls/ntdll/unix/signal_x86_64.c b/dlls/ntdll/unix/signal_x86_64.c
+index af4d8024..56d94630 100644
+--- a/dlls/ntdll/unix/signal_x86_64.c
++++ b/dlls/ntdll/unix/signal_x86_64.c
+@@ -87,6 +87,19 @@ extern void _thread_set_tsd_base(uint64_t);
+ extern status_t		_kern_generic_syscall(const char *subsystem, uint32 function,
+                                               void *buffer, size_t bufferSize);
+ #endif
++/* 32-bit code support; needs a kernel that provides these (the installed
++ * headers may predate them) */
++#ifndef THREAD_SET_LDT_ENTRY
++#define THREAD_SET_LDT_ENTRY	2
++#define THREAD_SET_FS_BASE		3
++#define THREAD_GET_FS_BASE		4
++#define THREAD_GET_GS_BASE		5
++struct thread_ldt_entry
++{
++    uint32 index;
++    uint32 descriptor[2];
++};
++#endif
+ #endif
+ 
+ #include "ntstatus.h"
+@@ -395,15 +408,16 @@ static inline const WORD *SS_sig_ptr( const ucontext_t *context )
+ #define R13_sig(context)     ((context)->uc_mcontext.r13)
+ #define R14_sig(context)     ((context)->uc_mcontext.r14)
+ #define R15_sig(context)     ((context)->uc_mcontext.r15)
+-#define CS_sig(context)      cs64_sel
+-#define FS_sig(context)      NULL
++#define CS_sig(context)      ((context)->uc_mcontext.fpu.fp_fxsave.cs)
++/* %fs is saved after trap_number by kernels with 32-bit code support */
++#define FS_sig(context)      (*(WORD *)((char *)&(context)->uc_mcontext.fpu.fp_fxsave + 486))
+ #define GS_sig(context)      NULL
+-#define SS_sig(context)      NULL
++#define SS_sig(context)      ((context)->uc_mcontext.fpu.fp_fxsave.ss)
+ #define EFL_sig(context)     ((context)->uc_mcontext.rflags)
+ #define RIP_sig(context)     ((context)->uc_mcontext.rip)
+ #define RSP_sig(context)     ((context)->uc_mcontext.rsp)
+-#define TRAP_sig(context)    TRAP_x86_PAGEFLT
+-#define ERROR_sig(context)   0
++#define TRAP_sig(context)    ((context)->uc_mcontext.fpu.fp_fxsave.trap_number)
++#define ERROR_sig(context)   ((context)->uc_mcontext.fpu.fp_fxsave.error_code)
+ #define FPU_sig(context)     ((XMM_SAVE_AREA32 *)&(context)->uc_mcontext.fpu)
+ #define XState_sig(context)  NULL
+ 
+@@ -798,11 +812,14 @@ static inline void set_sigcontext( const CONTEXT *context, ucontext_t *sigcontex
+     R14_sig(sigcontext) = context->R14;
+     R15_sig(sigcontext) = context->R15;
+     RIP_sig(sigcontext) = context->Rip;
+-#ifndef __HAIKU__
++#ifdef __HAIKU__
++    /* older kernels restore %cs from the signal context unchecked */
++    CS_sig(sigcontext)  = (cs32_sel && context->SegCs == cs32_sel) ? cs32_sel : cs64_sel;
++#else
+     CS_sig(sigcontext)  = context->SegCs;
++#endif
+     FS_sig(sigcontext)  = context->SegFs;
+     EFL_sig(sigcontext) = context->EFlags;
+-#endif
+ }
+ 
+ 
+@@ -915,11 +932,9 @@ static void save_context( struct thread_data *data, struct xcontext *xcontext,
+     context->R14    = R14_sig(sigcontext);
+     context->R15    = R15_sig(sigcontext);
+     context->Rip    = RIP_sig(sigcontext);
+-#ifndef __HAIKU__
+     context->SegCs  = CS_sig(sigcontext);
+     context->SegFs  = FS_sig(sigcontext);
+     context->EFlags = EFL_sig(sigcontext);
+-#endif
+     context->SegDs  = ds64_sel;
+     context->SegEs  = ds64_sel;
+     context->SegGs  = ds64_sel;
+@@ -1561,9 +1576,7 @@ static void setup_raise_exception( struct thread_data *data, ucontext_t *sigcont
+         context_init_xstate( &stack->context, NULL );
+     }
+ 
+-#ifndef __HAIKU__
+     CS_sig(sigcontext)  = cs64_sel;
+-#endif
+     RIP_sig(sigcontext) = (ULONG_PTR)pKiUserExceptionDispatcher;
+     RSP_sig(sigcontext) = (ULONG_PTR)stack;
+     /* clear single-step, direction, and align check flag */
+@@ -1724,7 +1737,7 @@ __ASM_GLOBAL_FUNC( call_user_mode_callback,
+                    "1:\tmovq %rdi,%rsp\n\t"    /* user_rsp */
+                    "movq 0x98(%r14),%rbp\n\t"  /* prev_frame->rbp */
+                    "ldmxcsr 0xd8(%r14)\n\t"    /* prev_frame->xsave.MxCsr */
+-#if defined(__linux__) || defined(__FreeBSD__)
++#if defined(__linux__) || defined(__FreeBSD__) || defined(__HAIKU__)
+                    "movb $1,0x340(%r13)\n\t"   /* amd64_thread_data()->syscall_dispatch */
+                    "movw 0x338(%r13),%ax\n"    /* amd64_thread_data()->fs */
+                    "testw %ax,%ax\n\t"
+@@ -1963,7 +1976,6 @@ static inline BOOL handle_interrupt( struct thread_data *data, ucontext_t *sigco
+     case 0x2c:
+         rec->ExceptionCode = STATUS_ASSERTION_FAILURE;
+         break;
+-#ifndef __HAIKU__
+     case 0x2d:
+         if (CS_sig(sigcontext) == cs64_sel)
+         {
+@@ -1984,7 +1996,6 @@ static inline BOOL handle_interrupt( struct thread_data *data, ucontext_t *sigco
+         rec->NumberParameters = 1;
+         rec->ExceptionInformation[0] = context->Rax;
+         break;
+-#endif
+     default:
+         return FALSE;
+     }
+@@ -2253,6 +2264,9 @@ static inline BOOL check_invalid_gsbase( struct thread_data *data, ucontext_t *u
+     amd64_get_gsbase( (void**)&cur_gsbase );
+ #elif defined(__NetBSD__)
+     sysarch( X86_64_GET_GSBASE, &cur_gsbase );
++#elif defined(__HAIKU__)
++    if (_kern_generic_syscall( THREAD_SYSCALLS, THREAD_GET_GS_BASE, &cur_gsbase, sizeof(cur_gsbase) ))
++        return FALSE;  /* older kernel: cannot tell */
+ #elif defined(__APPLE__)
+     /* init_handler() has already reset GSBASE, we can't determine what it was before the signal */
+ #endif
+@@ -2314,6 +2328,8 @@ static inline BOOL check_invalid_gsbase( struct thread_data *data, ucontext_t *u
+     amd64_set_gsbase( data->teb );
+ #elif defined(__NetBSD__)
+     sysarch( X86_64_SET_GSBASE, &data->teb );
++#elif defined(__HAIKU__)
++    _kern_generic_syscall( THREAD_SYSCALLS, THREAD_SET_GS_BASE, &data->teb, sizeof(data->teb) );
+ #elif defined(__APPLE__)
+     /* leave_handler() will set GSBASE to the TEB */
+ #endif
+@@ -2807,6 +2823,18 @@ void ldt_set_entry( WORD sel, LDT_ENTRY entry )
+         perror("i386_set_ldt");
+         exit(1);
+     }
++#elif defined(__HAIKU__)
++    struct thread_ldt_entry ldt_entry = { .index = sel >> 3 };
++    status_t status;
++
++    memcpy( ldt_entry.descriptor, &entry, sizeof(entry) );
++    status = _kern_generic_syscall( THREAD_SYSCALLS, THREAD_SET_LDT_ENTRY, &ldt_entry, sizeof(ldt_entry) );
++    if (status == B_BAD_HANDLER)
++    {
++        fprintf( stderr, "No LDT support in this Haiku kernel\n" );
++        exit(1);
++    }
++    if (status != B_OK) ERR( "THREAD_SET_LDT_ENTRY %#x failed: %#x\n", sel, (int)status );
+ #else
+     fprintf( stderr, "No LDT support on this platform\n" );
+     exit(1);
+@@ -2951,6 +2979,8 @@ void signal_init_process( TEB *teb )
+         cs32_sel = ldt_alloc_entry( ldt_make_cs32_entry() );
+ #elif defined(__FreeBSD__)
+         cs32_sel = GSEL(GUCODE32_SEL, SEL_UPL);
++#elif defined(__HAIKU__)
++        cs32_sel = 0x1b;  /* USER32_CODE_SELECTOR; %fs uses an LDT entry per thread */
+ #endif
+     }
+ 
+@@ -3145,6 +3175,19 @@ __ASM_GLOBAL_FUNC( signal_start_thread,
+                    "jmp " __ASM_LOCAL_LABEL("__wine_syscall_dispatcher_return") )
+ 
+ 
++#ifdef __HAIKU__
++/* Called by the dispatchers when 32-bit code left its %fs loaded: give the Unix
++ * side the thread's TLS back. */
++extern void haiku_set_tls_fs(void);
++void haiku_set_tls_fs(void)
++{
++    static const uint64 base;  /* 0: the thread's TLS */
++
++    _kern_generic_syscall( THREAD_SYSCALLS, THREAD_SET_FS_BASE, (void *)&base, sizeof(base) );
++}
++#endif
++
++
+ /***********************************************************************
+  *           __wine_syscall_dispatcher
+  */
+@@ -3274,6 +3317,24 @@ __ASM_GLOBAL_FUNC( __wine_syscall_dispatcher,
+                    "popq %r8\n\t"
+                    "leaq -0x98(%rbp),%rcx\n"
+                    "2:\n\t"
++#elif defined(__HAIKU__)
++                   "movw %fs,%si\n\t"
++                   "testw %si,%si\n\t"
++                   "jz 2f\n\t"
++                   "pushq %rcx\n\t"
++                   "pushq %rdx\n\t"
++                   "pushq %r8\n\t"
++                   "pushq %r9\n\t"
++                   "pushq %r10\n\t"
++                   "pushq %r11\n\t"
++                   "call " __ASM_NAME("haiku_set_tls_fs") "\n\t"
++                   "popq %r11\n\t"
++                   "popq %r10\n\t"
++                   "popq %r9\n\t"
++                   "popq %r8\n\t"
++                   "popq %rdx\n\t"
++                   "popq %rcx\n"
++                   "2:\n\t"
+ #elif defined __APPLE__
+                    "movq 0x320(%r13),%rdi\n\t"     /* amd64_thread_data()->pthread_teb */
+                    "xorl %esi,%esi\n\t"
+@@ -3320,15 +3381,19 @@ __ASM_GLOBAL_FUNC( __wine_syscall_dispatcher,
+                    __ASM_CFI(".cfi_remember_state\n\t")
+                    __ASM_CFI_CFA_IS_AT2(rcx, 0xa8, 0x01) /* frame->syscall_cfa */
+                    "leaq 0x70(%rcx),%rsp\n\t"      /* %rsp > frame means no longer inside syscall */
+-#if defined(__linux__) || defined(__FreeBSD__)
++#if defined(__linux__) || defined(__FreeBSD__) || defined(__HAIKU__)
+                    "movb $1,0x340(%r13)\n\t"       /* amd64_thread_data()->syscall_dispatch */
+                    "movw 0x338(%r13),%dx\n"        /* amd64_thread_data()->fs */
+                    "testw %dx,%dx\n\t"
+                    "jz 1f\n\t"
+                    "movw %dx,%fs\n"
+-# ifdef __FreeBSD__
++# if defined(__FreeBSD__) || defined(__HAIKU__)
+                    /* reset %ss (after sysret) for AMD */
++#  ifdef __FreeBSD__
+                    "movw $0x3b,%dx\n\t"           /* GSEL(GUDATA_SEL, SEL_UPL) */
++#  else
++                   "movw $0x23,%dx\n\t"           /* USER_DATA_SELECTOR */
++#  endif
+                    "movw %dx,%ss\n\t"
+ # endif
+                    "1:\n\t"
+@@ -3590,6 +3655,24 @@ __ASM_GLOBAL_FUNC( __wine_unix_call_dispatcher,
+                    "popq %r9\n\t"
+                    "popq %r8\n\t"
+                    "2:\n\t"
++#elif defined(__HAIKU__)
++                   "movw %fs,%si\n\t"
++                   "testw %si,%si\n\t"
++                   "jz 2f\n\t"
++                   "pushq %rcx\n\t"
++                   "pushq %rdx\n\t"
++                   "pushq %r8\n\t"
++                   "pushq %r9\n\t"
++                   "pushq %r10\n\t"
++                   "pushq %r11\n\t"
++                   "call " __ASM_NAME("haiku_set_tls_fs") "\n\t"
++                   "popq %r11\n\t"
++                   "popq %r10\n\t"
++                   "popq %r9\n\t"
++                   "popq %r8\n\t"
++                   "popq %rdx\n\t"
++                   "popq %rcx\n"
++                   "2:\n\t"
+ #elif defined __APPLE__
+                    "movq 0x320(%r13),%rdi\n\t"     /* amd64_thread_data()->pthread_teb */
+                    "xorl %esi,%esi\n\t"
+@@ -3616,15 +3699,19 @@ __ASM_GLOBAL_FUNC( __wine_unix_call_dispatcher,
+                    /* switch to user stack */
+                    "movq 0x88(%rcx),%rsp\n\t"
+                    __ASM_CFI(".cfi_restore_state\n\t")
+-#if defined(__linux__) || defined(__FreeBSD__)
++#if defined(__linux__) || defined(__FreeBSD__) || defined(__HAIKU__)
+                    "movb $1,0x340(%r13)\n\t"       /* amd64_thread_data()->syscall_dispatch */
+                    "movw 0x338(%r13),%dx\n"        /* amd64_thread_data()->fs */
+                    "testw %dx,%dx\n\t"
+                    "jz 1f\n\t"
+                    "movw %dx,%fs\n"
+-# ifdef __FreeBSD__
++# if defined(__FreeBSD__) || defined(__HAIKU__)
+                    /* reset %ss (after sysret) for AMD */
++#  ifdef __FreeBSD__
+                    "movw $0x3b,%dx\n\t"           /* GSEL(GUDATA_SEL, SEL_UPL) */
++#  else
++                   "movw $0x23,%dx\n\t"           /* USER_DATA_SELECTOR */
++#  endif
+                    "movw %dx,%ss\n\t"
+ # endif
+                    "1:\n\t"
+diff --git a/dlls/ntdll/unix/system.c b/dlls/ntdll/unix/system.c
+index 7ecb8b4c..6fc66d4a 100644
+--- a/dlls/ntdll/unix/system.c
++++ b/dlls/ntdll/unix/system.c
+@@ -590,6 +590,8 @@ void init_shared_data_cpuinfo( KUSER_SHARED_DATA *data )
+         features[PF_MOVDIR64B_INSTRUCTION_AVAILABLE]= !!(regs[2] & (1 << 28));
+ #if defined(__linux__)
+         features[PF_RDWRFSGSBASE_AVAILABLE] &= !!(getauxval( AT_HWCAP2 ) & 2);
++#elif defined(__HAIKU__)
++        features[PF_RDWRFSGSBASE_AVAILABLE] = FALSE;  /* the kernel does not enable it */
+ #endif
+     }
+ 
+-- 
+2.47.3
+
+
+From 1ad619ff5f32cffd938b8b03713663b98c7cf1c6 Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
+Date: Thu, 15 Oct 2026 14:00:46 +1000
+Subject: [PATCH 16/16] ntdll, server: Use the xattr functions from libgnu on
+ Haiku.
+
+The Haiku port disabled HAVE_SYS_XATTR_H in ntdll and the server. Wine
+stores reparse points (Windows symbolic links) and DOS attributes in
+extended attributes, so FSCTL_SET_REPARSE_POINT failed with ENOSYS. Wine
+Mono's installer creates symlinks in its CREATELINKS64 action and failed
+with 1603, so every .NET custom action (WiX DTF) failed after it, for
+example in the iLok License Support installer (0x80070643).
+
+Haiku provides fgetxattr() and friends in libgnu, which maps them to BFS
+attributes. Check for the library in configure and link ntdll and the
+server with it.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ configure.ac           | 2 ++
+ dlls/ntdll/Makefile.in | 2 +-
+ dlls/ntdll/unix/file.c | 5 -----
+ server/Makefile.in     | 2 +-
+ server/fd.c            | 1 -
+ 5 files changed, 4 insertions(+), 8 deletions(-)
+
+diff --git a/configure.ac b/configure.ac
+index 676d0ac6..68590bf1 100644
+--- a/configure.ac
++++ b/configure.ac
+@@ -941,6 +941,8 @@ then
+         [AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <sys/xattr.h>]], [[getxattr("", "", "", 0, 0, 0);]])],
+                            [wine_cv_xattr_extra_args=yes],[wine_cv_xattr_extra_args=no])])
+     test $wine_cv_xattr_extra_args != yes || AC_DEFINE(XATTR_ADDITIONAL_OPTIONS, 1, [Define if xattr functions take additional arguments (macOS)])
++    dnl Haiku provides the xattr functions in libgnu
++    AC_CHECK_FUNC(fgetxattr,,[AC_CHECK_LIB(gnu,fgetxattr,[AC_SUBST(XATTR_LIBS,"-lgnu")])])
+ fi
+ 
+ dnl **** Check for working dll ****
+diff --git a/dlls/ntdll/Makefile.in b/dlls/ntdll/Makefile.in
+index 9a15bc31..3974a8f3 100644
+--- a/dlls/ntdll/Makefile.in
++++ b/dlls/ntdll/Makefile.in
+@@ -5,7 +5,7 @@ IMPORTLIB = ntdll
+ IMPORTS   = $(SYMCRYPT_PE_LIBS) $(ZLIB_PE_LIBS) $(MUSL_PE_LIBS)
+ EXTRAINCL = $(SYMCRYPT_PE_CFLAGS) $(ZLIB_PE_CFLAGS)
+ UNIX_CFLAGS  = $(HWLOC_CFLAGS)
+-UNIX_LIBS    = $(IOKIT_LIBS) $(COREFOUNDATION_LIBS) $(CORESERVICES_LIBS) $(RT_LIBS) $(PTHREAD_LIBS) $(I386_LIBS) $(PROCSTAT_LIBS) $(HWLOC_LIBS)
++UNIX_LIBS    = $(IOKIT_LIBS) $(COREFOUNDATION_LIBS) $(CORESERVICES_LIBS) $(RT_LIBS) $(PTHREAD_LIBS) $(I386_LIBS) $(PROCSTAT_LIBS) $(HWLOC_LIBS) $(XATTR_LIBS)
+ 
+ EXTRADLLFLAGS = -nodefaultlibs
+ i386_EXTRADLLFLAGS = -Wl,--image-base,0x7bc00000
+diff --git a/dlls/ntdll/unix/file.c b/dlls/ntdll/unix/file.c
+index e6099c2c..8c7979fc 100644
+--- a/dlls/ntdll/unix/file.c
++++ b/dlls/ntdll/unix/file.c
+@@ -165,11 +165,6 @@ typedef struct
+ 
+ #endif  /* linux */
+ 
+-#ifdef __HAIKU__
+-//#include <sys/xattr.h>
+-#undef HAVE_SYS_XATTR_H
+-#endif
+-
+ #define IS_SEPARATOR(ch)   ((ch) == '\\' || (ch) == '/')
+ 
+ #define INVALID_NT_CHARS   '*','?','<','>','|','"'
+diff --git a/server/Makefile.in b/server/Makefile.in
+index 0dd53951..e6cd264a 100644
+--- a/server/Makefile.in
++++ b/server/Makefile.in
+@@ -52,6 +52,6 @@ SOURCES = \
+ 	winstation.c
+ 
+ UNIX_CFLAGS = $(INOTIFY_CFLAGS)
+-UNIX_LIBS   = $(LDEXECFLAGS) $(RT_LIBS) $(INOTIFY_LIBS) $(PROCSTAT_LIBS)
++UNIX_LIBS   = $(LDEXECFLAGS) $(RT_LIBS) $(INOTIFY_LIBS) $(PROCSTAT_LIBS) $(XATTR_LIBS)
+ 
+ unicode_EXTRADEFS = -DBINDIR="\"${bindir}\"" -DDATADIR="\"${datadir}\""
+diff --git a/server/fd.c b/server/fd.c
+index acb4668f..c2eb0419 100644
+--- a/server/fd.c
++++ b/server/fd.c
+@@ -88,7 +88,6 @@
+ #endif
+ #ifdef __HAIKU__
+ #undef ioctl
+-#undef HAVE_SYS_XATTR_H
+ #endif
+ #ifdef HAVE_SYS_XATTR_H
+ #include <sys/xattr.h>
 -- 
 2.47.3
 
