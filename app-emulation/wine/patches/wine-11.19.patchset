@@ -1,7 +1,7 @@
 From f1ae6aa31e602ac1b357b9f7f400258367d26d1f Mon Sep 17 00:00:00 2001
 From: X512 <danger_mail@list.ru>
 Date: Thu, 23 Apr 2026 02:37:32 +0200
-Subject: [PATCH 01/16] Add Wayland input header
+Subject: [PATCH 01/17] Add Wayland input header
 
 ---
  dlls/winewayland.drv/input-event-codes.h | 980 +++++++++++++++++++++++
@@ -1001,7 +1001,7 @@ index 00000000..a4206723
 From 6f1edabb0f0a5ba40feeb0f5652ca46699d33e24 Mon Sep 17 00:00:00 2001
 From: X512 <danger_mail@list.ru>
 Date: Sun, 3 May 2026 11:49:20 +0200
-Subject: [PATCH 02/16] 11.8 patches
+Subject: [PATCH 02/17] 11.8 patches
 
 [rations: rebased onto wine-11.19. system.c: kept upstream's new <assert.h> include alongside the Haiku OS.h block. signal_x86_64.c: dropped the comment-only //#ifndef/#endif pair around usr1_handler, which upstream rewrote (new !data->teb branch); no functional change. thread.c: also renamed spawn_thread around the OS.h include, since 11.19 adds a static spawn_thread() that clashes with Haiku's.]
 ---
@@ -1927,7 +1927,7 @@ index e92397eb..75129b66 100644
 From 73178b9128cdc18ca1e8c80834be4a1c4034cf48 Mon Sep 17 00:00:00 2001
 From: Peppersawce <michaelpeppers89@yahoo.it>
 Date: Fri, 24 Apr 2026 15:59:56 +0200
-Subject: [PATCH 03/16] Disable Bluetooth on Beta 5
+Subject: [PATCH 03/17] Disable Bluetooth on Beta 5
 
 ---
  server/sock.c | 4 ++++
@@ -1955,7 +1955,7 @@ index 837ae2f2..722b4abb 100644
 From 5446418205ffcb48c2076981e0990fe57c7745b7 Mon Sep 17 00:00:00 2001
 From: Ken Mays <kmays2000@gmail.com>
 Date: Sat, 25 Apr 2026 13:40:26 +0200
-Subject: [PATCH 04/16] Opensound support
+Subject: [PATCH 04/17] Opensound support
 
 ---
  configure.ac               | 6 +++---
@@ -2024,7 +2024,7 @@ index f5844912..1aee2585 100644
 From a00e31e6af0880333e69a17739eb15e24a170d89 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Sun, 19 Jul 2026 22:04:22 +1000
-Subject: [PATCH 05/16] Run static initializers in Winelib modules on Haiku
+Subject: [PATCH 05/17] Run static initializers in Winelib modules on Haiku
 
 Haikus libroot has neither dladdr1() nor dlinfo(), so __wine_init_so_dll()
 compiled to an empty function and no static constructor in any Winelib module
@@ -2141,7 +2141,7 @@ index 88d00d1f..f4ab87b1 100644
 From fcc0c63c656ab6be540025fb5339cc4c11f41310 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Mon, 20 Jul 2026 00:23:17 +1000
-Subject: [PATCH 06/16] Do not block in the SIGSEGV handler on Haiku
+Subject: [PATCH 06/17] Do not block in the SIGSEGV handler on Haiku
 
 The Haiku port left an interactive debug hook in segv_handler: after
 printing the fault it called fgetc(stdin) and waited for a keypress, with
@@ -2188,7 +2188,7 @@ index b022ec70..af4d8024 100644
 From 1a0088de0f925cc344bce03290b211cd4a2cae94 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Mon, 20 Jul 2026 17:47:27 +1000
-Subject: [PATCH 07/16] loader: find the loader path via find_path() on Haiku
+Subject: [PATCH 07/17] loader: find the loader path via find_path() on Haiku
 
 Haiku has no /proc, so get_self_exe() returned NULL and the loader fell
 back to resolving argv[0]. That works for any invocation carrying a
@@ -2237,7 +2237,7 @@ index 71ba308c..e959a762 100644
 From f209fb6cc04d5ee35536c4d154cc166c7f8555c5 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Fri, 24 Jul 2026 16:53:02 +1000
-Subject: [PATCH 08/16] winewayland: add OSMesa software OpenGL backend for
+Subject: [PATCH 08/17] winewayland: add OSMesa software OpenGL backend for
  Haiku
 
 Haiku's Mesa has no DRI swrast and no Wayland EGL platform, so the EGL path
@@ -3020,7 +3020,7 @@ index 00000000..74dd38f7
 From cf95cc40bf10ecc94aaba233074015bf7c16508c Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Mon, 27 Jul 2026 01:36:07 +1000
-Subject: [PATCH 09/16] dxgi: Wait for a refresh interval in
+Subject: [PATCH 09/17] dxgi: Wait for a refresh interval in
  IDXGIOutput::WaitForVBlank().
 
 WaitForVBlank() printed a FIXME and returned E_NOTIMPL immediately,
@@ -3103,7 +3103,7 @@ index e828ed0d..9690dee6 100644
 From 488d7fd44e16339c4aecc1357fa766a1fe1e013d Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Wed, 7 Oct 2026 12:34:24 +1000
-Subject: [PATCH 10/16] sechost: Report no failure actions in
+Subject: [PATCH 10/17] sechost: Report no failure actions in
  QueryServiceConfig2W.
 
 services.exe doesn't keep a service's failure actions: ChangeServiceConfig2W accepts them with a
@@ -3168,7 +3168,7 @@ index f05fd2d7..20a7fb17 100644
 From e18ed04994c89eadefb6b93d855e5d9dccf6212f Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Wed, 7 Oct 2026 12:34:45 +1000
-Subject: [PATCH 11/16] msiexec, rundll32: Declare Windows 10 compatibility in
+Subject: [PATCH 11/17] msiexec, rundll32: Declare Windows 10 compatibility in
  their manifests.
 
 Windows 8.1 and later report Windows 8 (6.2) to a program whose manifest doesn't list the newer
@@ -3279,7 +3279,7 @@ index 00000000..07b215a1
 From 4c2b9640042b3331a1029b8c9f46007f949435f1 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Thu, 15 Oct 2026 10:50:10 +1000
-Subject: [PATCH 12/16] server: Detach asyncs from a queue before terminating
+Subject: [PATCH 12/17] server: Detach asyncs from a queue before terminating
  them in free_async_queue().
 
 free_async_queue() terminated each async while it was still linked into
@@ -3346,7 +3346,7 @@ index ae51b2f7..691b7984 100644
 From e0caeb27c2f4c965b201865974f98999e31b5d03 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Thu, 15 Oct 2026 13:03:38 +1000
-Subject: [PATCH 13/16] ntdll, server: Deliver signals to specific threads on
+Subject: [PATCH 13/17] ntdll, server: Deliver signals to specific threads on
  Haiku.
 
 get_unix_tid() had no Haiku branch and returned -1, so the server could
@@ -3426,7 +3426,7 @@ index 2e6d93b7..bda79d71 100644
 From b678548c02747797e32b6de61f2286d4fa679362 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Thu, 15 Oct 2026 13:12:19 +1000
-Subject: [PATCH 14/16] winegcc: Do not link with -ldl on Haiku.
+Subject: [PATCH 14/17] winegcc: Do not link with -ldl on Haiku.
 
 Haiku provides dlopen() and friends in libroot and ships no libdl, so
 every Winelib link failed unless an empty libdl.a was put in place by
@@ -3457,7 +3457,7 @@ index 75129b66..07d4fb6e 100644
 From 55f6487b56b1f22f3f2e3788df756a1fdbc4545b Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Thu, 15 Oct 2026 14:00:46 +1000
-Subject: [PATCH 15/16] ntdll: Support WoW64 (32-bit code) on Haiku.
+Subject: [PATCH 15/17] ntdll: Support WoW64 (32-bit code) on Haiku.
 
 32-bit Windows code needs a 32-bit code selector and a per-thread %fs
 segment whose base is the 32-bit TEB. Stock Haiku has neither an LDT nor
@@ -3783,7 +3783,7 @@ index 7ecb8b4c..6fc66d4a 100644
 From 1ad619ff5f32cffd938b8b03713663b98c7cf1c6 Mon Sep 17 00:00:00 2001
 From: rations <ehqcar@proton.me>
 Date: Thu, 15 Oct 2026 14:00:46 +1000
-Subject: [PATCH 16/16] ntdll, server: Use the xattr functions from libgnu on
+Subject: [PATCH 16/17] ntdll, server: Use the xattr functions from libgnu on
  Haiku.
 
 The Haiku port disabled HAVE_SYS_XATTR_H in ntdll and the server. Wine
@@ -3872,6 +3872,286 @@ index acb4668f..c2eb0419 100644
  #endif
  #ifdef HAVE_SYS_XATTR_H
  #include <sys/xattr.h>
+-- 
+2.47.3
+
+
+From 8a18eb55c9d2b67ef0660a95b18b598ae4192d6d Mon Sep 17 00:00:00 2001
+From: rations <ehqcar@proton.me>
+Date: Fri, 16 Oct 2026 14:27:35 +1000
+Subject: [PATCH 17/17] ntdll, server: Support hardware breakpoints on Haiku.
+
+Copy protection such as PACE (iLok) sets Dr0-Dr3 and Dr7 on its own
+threads with SetThreadContext and expects EXCEPTION_SINGLE_STEP when a
+breakpoint is hit. A probe that does not trap marks the process as
+tampered, and the licence check fails later. The server's ptrace
+get/set_thread_context are empty on Haiku, so the breakpoints were
+never set.
+
+This needs a Haiku kernel with THREAD_SET_DEBUG_REGISTERS, which sets the
+calling thread's own breakpoints and reports DR6 in the signal context
+(fpu_state offset 488, after the FS selector). The constant gets a
+fallback definition because the stock headers lack it.
+- The server no longer treats the debug registers as server-only
+  (system_flags 0), so they travel with the context.
+- Each thread loads its own: NtSetContextThread and
+  set_thread_wow64_context on the thread itself, and restore_context and
+  the thread start when another thread changed them while it was
+  suspended.
+- NtGetContextThread answers from the thread's own copy instead of a
+  server call.
+- trap_handler takes DR6 from the signal context, with the reserved bits
+  set as Windows reports them (0xffff0ff0); PACE checks for them.
+
+On a stock kernel the call fails, a warning is printed and the
+breakpoints are ignored, as Windows ignores values it cannot use.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ dlls/ntdll/unix/signal_x86_64.c | 115 ++++++++++++++++++++++++++++++++
+ server/thread.c                 |   6 ++
+ 2 files changed, 121 insertions(+)
+
+diff --git a/dlls/ntdll/unix/signal_x86_64.c b/dlls/ntdll/unix/signal_x86_64.c
+index 56d94630..98faf75d 100644
+--- a/dlls/ntdll/unix/signal_x86_64.c
++++ b/dlls/ntdll/unix/signal_x86_64.c
+@@ -100,6 +100,15 @@ struct thread_ldt_entry
+     uint32 descriptor[2];
+ };
+ #endif
++/* hardware breakpoints of a thread, with the same kernel support */
++#ifndef THREAD_SET_DEBUG_REGISTERS
++#define THREAD_SET_DEBUG_REGISTERS	6
++struct thread_debug_registers
++{
++    uint64 address[4];
++    uint64 dr7;
++};
++#endif
+ #endif
+ 
+ #include "ntstatus.h"
+@@ -411,6 +420,8 @@ static inline const WORD *SS_sig_ptr( const ucontext_t *context )
+ #define CS_sig(context)      ((context)->uc_mcontext.fpu.fp_fxsave.cs)
+ /* %fs is saved after trap_number by kernels with 32-bit code support */
+ #define FS_sig(context)      (*(WORD *)((char *)&(context)->uc_mcontext.fpu.fp_fxsave + 486))
++/* followed by DR6 of the last debug trap */
++#define DR6_sig(context)     (*(ULONG64 *)((char *)&(context)->uc_mcontext.fpu.fp_fxsave + 488))
+ #define GS_sig(context)      NULL
+ #define SS_sig(context)      ((context)->uc_mcontext.fpu.fp_fxsave.ss)
+ #define EFL_sig(context)     ((context)->uc_mcontext.rflags)
+@@ -903,6 +914,46 @@ static inline void leave_handler( struct thread_data *data, ucontext_t *sigconte
+ }
+ 
+ 
++#ifdef __HAIKU__
++/***********************************************************************
++ *           set_haiku_debug_registers
++ *
++ * Load the current thread's debug registers through the kernel. The server
++ * cannot set them on Haiku: each thread does it for itself, also when it
++ * resumes after another thread changed its context.
++ */
++static void set_haiku_debug_registers( ULONG64 dr0, ULONG64 dr1, ULONG64 dr2, ULONG64 dr3,
++                                       ULONG64 dr7 )
++{
++    struct thread_debug_registers regs = { { dr0, dr1, dr2, dr3 }, dr7 };
++    status_t status = _kern_generic_syscall( THREAD_SYSCALLS, THREAD_SET_DEBUG_REGISTERS,
++                                             &regs, sizeof(regs) );
++
++    /* Windows ignores values it cannot use, too */
++    if (status != B_OK)
++        WARN_(seh)( "debug registers not set (Dr7 %#lx): %#x\n", (ULONG_PTR)dr7, (int)status );
++}
++
++
++/***********************************************************************
++ *           update_haiku_debug_registers
++ *
++ * Load the debug registers of a context the server handed back to the
++ * current thread, if another thread changed them.
++ */
++static void update_haiku_debug_registers( const struct amd64_thread_data *amd64_data,
++                                          const CONTEXT *context )
++{
++    if ((context->ContextFlags & CONTEXT_DEBUG_REGISTERS) != CONTEXT_DEBUG_REGISTERS) return;
++    if (amd64_data->dr0 == context->Dr0 && amd64_data->dr1 == context->Dr1 &&
++        amd64_data->dr2 == context->Dr2 && amd64_data->dr3 == context->Dr3 &&
++        amd64_data->dr7 == context->Dr7) return;
++    set_haiku_debug_registers( context->Dr0, context->Dr1, context->Dr2, context->Dr3,
++                               context->Dr7 );
++}
++#endif
++
++
+ /***********************************************************************
+  *           save_context
+  *
+@@ -1017,6 +1068,9 @@ static void restore_context( struct thread_data *data, const struct xcontext *xc
+ 
+     if (amd64_data)
+     {
++#ifdef __HAIKU__
++        update_haiku_debug_registers( amd64_data, context );
++#endif
+         amd64_data->dr0 = context->Dr0;
+         amd64_data->dr1 = context->Dr1;
+         amd64_data->dr2 = context->Dr2;
+@@ -1110,6 +1164,10 @@ NTSTATUS WINAPI NtSetContextThread( HANDLE handle, const CONTEXT *context )
+         if (ret || !self) return ret;
+         if (flags & CONTEXT_DEBUG_REGISTERS)
+         {
++#ifdef __HAIKU__
++            set_haiku_debug_registers( context->Dr0, context->Dr1, context->Dr2, context->Dr3,
++                                       context->Dr7 );
++#endif
+             amd64_data->dr0 = context->Dr0;
+             amd64_data->dr1 = context->Dr1;
+             amd64_data->dr2 = context->Dr2;
+@@ -1180,8 +1238,10 @@ NTSTATUS WINAPI NtGetContextThread( HANDLE handle, CONTEXT *context )
+ 
+     if (self && !frame) return STATUS_ACCESS_DENIED;
+ 
++#ifndef __HAIKU__  /* on Haiku the thread's own copy below is all there is */
+     /* debug registers require a server call */
+     if (needed_flags & CONTEXT_DEBUG_REGISTERS) self = FALSE;
++#endif
+ 
+     if (!self)
+     {
+@@ -1296,12 +1356,23 @@ NTSTATUS WINAPI NtGetContextThread( HANDLE handle, CONTEXT *context )
+     /* update the cached version of the debug registers */
+     if (needed_flags & CONTEXT_DEBUG_REGISTERS)
+     {
++#ifdef __HAIKU__
++        /* the server does not know them on Haiku: the cache is the thread's own copy */
++        context->Dr0 = amd64_data->dr0;
++        context->Dr1 = amd64_data->dr1;
++        context->Dr2 = amd64_data->dr2;
++        context->Dr3 = amd64_data->dr3;
++        context->Dr6 = amd64_data->dr6;
++        context->Dr7 = amd64_data->dr7;
++        context->ContextFlags |= CONTEXT_DEBUG_REGISTERS;
++#else
+         amd64_data->dr0 = context->Dr0;
+         amd64_data->dr1 = context->Dr1;
+         amd64_data->dr2 = context->Dr2;
+         amd64_data->dr3 = context->Dr3;
+         amd64_data->dr6 = context->Dr6;
+         amd64_data->dr7 = context->Dr7;
++#endif
+     }
+     set_context_exception_reporting_flags( &context->ContextFlags, CONTEXT_SERVICE_ACTIVE );
+     return STATUS_SUCCESS;
+@@ -1339,6 +1410,10 @@ NTSTATUS set_thread_wow64_context( HANDLE handle, const void *ctx, ULONG size )
+         if (ret || !self) return ret;
+         if (flags & CONTEXT_I386_DEBUG_REGISTERS)
+         {
++#ifdef __HAIKU__
++            set_haiku_debug_registers( context->Dr0, context->Dr1, context->Dr2, context->Dr3,
++                                       context->Dr7 );
++#endif
+             amd64_data->dr0 = context->Dr0;
+             amd64_data->dr1 = context->Dr1;
+             amd64_data->dr2 = context->Dr2;
+@@ -1441,12 +1516,23 @@ NTSTATUS get_thread_wow64_context( HANDLE handle, void *ctx, ULONG size )
+         /* update the cached version of the debug registers */
+         if (needed_flags & CONTEXT_I386_DEBUG_REGISTERS)
+         {
++#ifdef __HAIKU__
++            /* the server does not know them on Haiku: the cache is the thread's own copy */
++            context->Dr0 = amd64_data->dr0;
++            context->Dr1 = amd64_data->dr1;
++            context->Dr2 = amd64_data->dr2;
++            context->Dr3 = amd64_data->dr3;
++            context->Dr6 = amd64_data->dr6;
++            context->Dr7 = amd64_data->dr7;
++            context->ContextFlags |= CONTEXT_I386_DEBUG_REGISTERS;
++#else
+             amd64_data->dr0 = context->Dr0;
+             amd64_data->dr1 = context->Dr1;
+             amd64_data->dr2 = context->Dr2;
+             amd64_data->dr3 = context->Dr3;
+             amd64_data->dr6 = context->Dr6;
+             amd64_data->dr7 = context->Dr7;
++#endif
+         }
+         if (!(needed_flags & ~CONTEXT_I386_DEBUG_REGISTERS)) return ret;
+     }
+@@ -2514,11 +2600,20 @@ static void trap_handler( int signal, siginfo_t *siginfo, void *_sigcontext )
+          * and only do a server call if there is any hw bp enabled. */
+         if (!(context.c.EFlags & 0x100) || (context.c.Dr7 & 0xff))
+         {
++#ifdef __HAIKU__
++            /* save_context took Dr0-Dr3 and Dr7 from the thread's copy; the
++             * kernel reports in the signal context which breakpoints were hit.
++             * Windows passes DR6 as the processor reads it, with the reserved
++             * bits set, and copy protection checks for them. */
++            context.c.Dr6 = DR6_sig(sigcontext) | 0xffff0ff0;
++            amd64_thread_data( data )->dr6 = context.c.Dr6;
++#else
+             /* (possible) hardware breakpoint, fetch the debug registers */
+             DWORD saved_flags = context.c.ContextFlags;
+             context.c.ContextFlags = CONTEXT_DEBUG_REGISTERS;
+             NtGetContextThread(GetCurrentThread(), &context.c);
+             context.c.ContextFlags |= saved_flags;  /* restore flags */
++#endif
+         }
+         context.c.EFlags &= ~0x100;  /* clear single-step flag */
+         break;
+@@ -2713,6 +2808,10 @@ static void usr1_handler( int signal, siginfo_t *siginfo, void *_sigcontext )
+             frame->eflags = 0x200;
+             fixup_frame_fpu_state( frame, sigcontext );
+         }
++#ifdef __HAIKU__
++        /* the server only knows the debug registers from the suspended context */
++        context->c.ContextFlags |= CONTEXT_DEBUG_REGISTERS;
++#endif
+         NtGetContextThread( GetCurrentThread(), &context->c );
+         if (xstate_extended_features)
+         {
+@@ -3110,6 +3209,22 @@ void init_syscall_frame( LPTHREAD_START_ROUTINE entry, void *arg, TEB *teb )
+     }
+ 
+     if (data->suspend) wait_suspend( &context );
++#ifdef __HAIKU__
++    /* debug registers set by another thread while this one was suspended */
++    if (data->suspend)
++    {
++        update_haiku_debug_registers( thread_data, &context );
++        if ((context.ContextFlags & CONTEXT_DEBUG_REGISTERS) == CONTEXT_DEBUG_REGISTERS)
++        {
++            thread_data->dr0 = context.Dr0;
++            thread_data->dr1 = context.Dr1;
++            thread_data->dr2 = context.Dr2;
++            thread_data->dr3 = context.Dr3;
++            thread_data->dr6 = context.Dr6;
++            thread_data->dr7 = context.Dr7;
++        }
++    }
++#endif
+ 
+     ctx = (CONTEXT *)((ULONG_PTR)context.Rsp & ~15) - 1;
+     *ctx = context;
+diff --git a/server/thread.c b/server/thread.c
+index bdf48c4b..151d2817 100644
+--- a/server/thread.c
++++ b/server/thread.c
+@@ -123,7 +123,13 @@ struct context
+ #define CTX_WOW     1  /* context if thread is inside WoW */
+ 
+ /* flags for registers that always need to be set from the server side */
++#ifdef __HAIKU__
++/* none on Haiku: the debug registers travel with the context, and each
++ * thread loads its own through the kernel */
++static const unsigned int system_flags = 0;
++#else
+ static const unsigned int system_flags = SERVER_CTX_DEBUG_REGISTERS;
++#endif
+ 
+ static void context_dump( struct object *obj, int verbose );
+ static struct object *context_get_sync( struct object *obj );
 -- 
 2.47.3
 
